@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethical Avengers - Master Sprite Generator (Nano Banana)</title>
+    <!-- Load Puter.js for Nano Banana -->
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #111;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #0f0;
+            text-shadow: 2px 2px 0 #000;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #333;
+        }
+
+        /* Tabs */
+        .tab-bar {
+            display: flex;
+            overflow-x: auto;
+            background: #1a1a1a;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-right: 1px solid #333;
+            font-weight: bold;
+            color: #888;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: #0f0;
+            color: #000;
+        }
+
+        .tab:hover:not(.active) {
+            background: #333;
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .animation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+        }
+
+        .animation-card {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+
+        h3 {
+            color: #0fa;
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            background: #111;
+            color: #ddd;
+            border: 1px solid #555;
+            padding: 8px;
+            font-size: 13px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        button {
+            background: #0f0;
+            color: #000;
+            padding: 10px 15px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            width: 100%;
+            transition: background 0.1s;
+        }
+
+        button:hover {
+            background: #3f3;
+        }
+
+        .preview {
+            background: #000;
+            padding: 10px;
+            min-height: 100px;
+            border: 1px dashed #0f0;
+            text-align: center;
+            color: #0f0;
+            font-size: 12px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview img {
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated;
+            margin-bottom: 10px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .download-btn:hover {
+            background: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>🍌 Master Sprite Generator (Puter.js)</h1>
+        <p style="text-align: center; margin-bottom: 30px;">Generate consistent, full-body 16-bit sprite sheets using
+            Nano Banana.</p>
+
+        <div class="tab-bar" id="tabs">
+            <!-- Tabs injected by JS -->
+        </div>
+
+        <div id="content-area">
+            <!-- Content injected by JS -->
+        </div>
+    </div>
+
+    <script>
+        const CHARACTERS = [
+            {
+                id: 'leon_g',
+                name: 'Leon G',
+                desc: 'large muscular Black man in gold/yellow futuristic armor, black durag, gold gauntlets, EA shield on chest',
+                color: 'gold/yellow'
+            },
+            {
+                id: 'naga_soul',
+                name: 'Naga Soul',
+                desc: 'athletic man wearing a black gas mask, a long teal/cyan trench coat over dark tactical gear, EA shield logo on chest',
+                color: 'green'
+            },
+            {
+                id: 'dr_jack',
+                name: 'Dr. Jack',
+                desc: 'athletic blonde man, wearing a brown leather flying jacket, brown tactical trousers, EA shield on chest',
+                color: 'orange'
+            },
+            {
+                id: 'big_z',
+                name: 'Big Zeeko',
+                desc: 'athletic man in futuristic blue and white armor, wearing a blue baseball cap, EA shield logo on chest',
+                color: 'blue'
+            },
+            {
+                id: 'cherry',
+                name: 'Cherry',
+                desc: 'slim athletic Black woman with long red braids/locs, wearing a sleek purple and black futuristic bodysuit, EA shield on chest',
+                color: 'purple'
+            }
+        ];
+
+        const ANIMATIONS = [
+            { id: 'idle', name: 'Idle (6 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 6-frame full-body fighting idle stance in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. Showing a subtle breathing idle animation loop. Character faces right. Bright green (#00FF00) solid background. Ensure full body is visible from head to toe.` },
+            { id: 'walk', name: 'Walk (8 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 8-frame full-body walk cycle in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. He walks to the right in a confident stride. Bright green (#00FF00) solid background. Ensure full body is visible from head to toe.` },
+            { id: 'punch_combo', name: 'Punch Combo (9 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 9-frame full-body punch combo attack in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. The combo is: 3 frames jab, 3 frames cross punch, 3 frames uppercut. Character faces right. Bright green (#00FF00) solid background.` },
+            { id: 'kick', name: 'Kick (5 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 5-frame full-body forward kick sequence in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. Wind up, full extension powerful front kick, retract. Character faces right. Bright green (#00FF00) solid background.` },
+            { id: 'jump', name: 'Jump (4 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 4-frame full-body jump sequence in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. Crouch anticipation, launch upward, apex, falling down. Character faces right. Bright green (#00FF00) solid background.` },
+            { id: 'energy_blast', name: 'Energy Blast (6 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 6-frame full-body energy blast attack in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. Pulls hands back, thrusts forward releasing a ${c.color} energy projectile. Character faces right. Bright green (#00FF00) solid background.` },
+            { id: 'dash_attack', name: 'Dash Attack (4 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 4-frame full-body dash attack in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. Lunges forward with shoulder leading, motion blur lines, impact, slide recovery. Character dashes right. Bright green (#00FF00) solid background. Speed lines.` },
+            { id: 'powerup', name: 'Power-Up (6 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 6-frame full-body power-up transformation in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. Golden energy swirls, rising up as a massive ${c.color} fire aura engulfs character, glowing eyes, electricity. Character faces right. Bright green (#00FF00) solid background.` },
+            { id: 'hurt', name: 'Hurt/Knockdown (4 frames)', getPrompt: (c) => `16-bit pixel art sprite sheet: 4-frame full-body hurt and knockdown sequence in a horizontal strip. Same character as reference — ${c.desc}. Streets of Rage 2 style. Hit stagger backwards, stumble, fall to ground, lying flat on back. Character faces right. Bright green (#00FF00) solid background.` }
+        ];
+
+        function init() {
+            const tabsDiv = document.getElementById('tabs');
+            const contentDiv = document.getElementById('content-area');
+
+            CHARACTERS.forEach((char, index) => {
+                // Create tab
+                const tab = document.createElement('div');
+                tab.className = `tab ${index === 0 ? 'active' : ''}`;
+                tab.innerText = char.name;
+                tab.onclick = () => switchTab(char.id);
+                tabsDiv.appendChild(tab);
+
+                // Create content pane
+                const pane = document.createElement('div');
+                pane.id = `pane-${char.id}`;
+                pane.className = `tab-content ${index === 0 ? 'active' : ''}`;
+
+                const grid = document.createElement('div');
+                grid.className = 'animation-grid';
+
+                ANIMATIONS.forEach(anim => {
+                    const cardid = `${char.id}_${anim.id}`;
+                    const prompt = anim.getPrompt(char);
+
+                    grid.innerHTML += `
+                    <div class="animation-card">
+                        <h3>${anim.name}</h3>
+                        <textarea id="prompt-${cardid}">${prompt}</textarea>
+                        <button onclick="generateSprite('${cardid}', '${char.id}_${anim.id}')">Generate ${anim.name}</button>
+                        <div id="out-${cardid}" class="preview">Waiting to generate...</div>
+                    </div>
+                `;
+                });
+
+                pane.appendChild(grid);
+                contentDiv.appendChild(pane);
+            });
+        }
+
+        function switchTab(charId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            const tabs = Array.from(document.getElementById('tabs').children);
+            const index = CHARACTERS.findIndex(c => c.id === charId);
+            if (tabs[index]) tabs[index].classList.add('active');
+
+            document.getElementById(`pane-${charId}`).classList.add('active');
+        }
+
+        async function generateSprite(elementId, filename) {
+            const promptText = document.getElementById(`prompt-${elementId}`).value;
+            const outputDiv = document.getElementById(`out-${elementId}`);
+
+            outputDiv.innerHTML = "Generating via Puter... Please wait.<br><i>If this hangs, ensure you are logged into Puter.</i>";
+            outputDiv.style.color = "#fff";
+
+            try {
+                const imgElement = await puter.ai.txt2img(promptText);
+
+                outputDiv.innerHTML = "";
+                outputDiv.appendChild(imgElement);
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imgElement.src;
+                downloadLink.download = `${filename}.png`;
+                downloadLink.className = "download-btn";
+                downloadLink.innerText = "⬇️ Download Sheet";
+                outputDiv.appendChild(downloadLink);
+
+            } catch (error) {
+                outputDiv.innerHTML = `⚠️ Error: ${error.message}<br>Try refreshing or logging into Puter again.`;
+                outputDiv.style.color = "#f55";
+            }
+        }
+
+        // Initialize on load
+        init();
+    </script>
+
+</body>
+
+</html>

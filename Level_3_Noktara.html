@@ -1,0 +1,1273 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ethical Avengers: Noktara (Shadow Memory)</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+  <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    #game-container {
+      border: 2px solid #fff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      image-rendering: pixelated;
+      width: 100%;
+      max-width: 1280px;
+      aspect-ratio: 16/9;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="game-container"></div>
+  <script>
+    // --- PIXEL SHADERS ---
+    class GrayscalePipeline extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline {
+      constructor(game) {
+        super({
+          game: game,
+          renderTarget: true,
+          fragShader: `
+                precision mediump float;
+                uniform sampler2D uMainSampler;
+                varying vec2 outTexCoord;
+                void main() {
+                    vec4 color = texture2D(uMainSampler, outTexCoord);
+                    float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                    gl_FragColor = vec4(vec3(gray), color.a);
+                }
+            `
+        });
+      }
+    }
+
+    // Character Config
+    const CHARACTERS = {
+      "Curt (Naga) Soul": {
+        key: "default",
+        color: 0x00ffff,
+        title: "Tactician",
+      },
+      "Verona (Cherry)": { key: "cherry", color: 0x800080, title: "Mystic" },
+      "Dr Jack (Ignite)": {
+        key: "ignite",
+        color: 0xffd700,
+        title: "Scientist",
+      },
+    };
+
+    // --- SCENE 1: CHARACTER SELECT ---
+    class CharacterSelectScene extends Phaser.Scene {
+      constructor() {
+        super({ key: "CharacterSelectScene" });
+      }
+      create() {
+        this.add.rectangle(0, 0, 1280, 720, 0x111122).setOrigin(0);
+        this.add
+          .text(640, 80, "SELECT YOUR AVENGER", {
+            font: "bold 48px Courier",
+            fill: "#0ff",
+            align: "center",
+          })
+          .setOrigin(0.5);
+
+        const xs = [320, 640, 960];
+        const keys = Object.keys(CHARACTERS);
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.enterKey = this.input.keyboard.addKey(
+          Phaser.Input.Keyboard.KeyCodes.ENTER,
+        );
+
+        this.selectedIndex = 0;
+        this.heroBoxes = [];
+
+        keys.forEach((key, index) => {
+          let box = this.add.rectangle(
+            xs[index],
+            360,
+            128,
+            256,
+            CHARACTERS[key].color,
+          );
+          this.add
+            .text(xs[index], 560, key.split(" ")[0], {
+              font: "bold 32px Courier",
+              fill: "#fff",
+            })
+            .setOrigin(0.5);
+          this.heroBoxes.push(box);
+        });
+
+        this.selector = this.add
+          .rectangle(xs[0], 360, 140, 268, 0xffffff, 0)
+          .setStrokeStyle(6, 0xffffff);
+        this.input.keyboard.on("keydown-RIGHT", () => this.moveSelection(1));
+        this.input.keyboard.on("keydown-LEFT", () => this.moveSelection(-1));
+        this.input.keyboard.on("keydown-ENTER", () => {
+          this.scene.start("CutsceneScene", {
+            selectedHero: keys[this.selectedIndex],
+          });
+        });
+      }
+      moveSelection(dir) {
+        this.selectedIndex = Phaser.Math.Clamp(
+          this.selectedIndex + dir,
+          0,
+          2,
+        );
+        this.selector.x = this.heroBoxes[this.selectedIndex].x;
+      }
+    }
+
+    // --- SCENE 2: CUTSCENE STAGE 1 ---
+    class CutsceneScene extends Phaser.Scene {
+      constructor() {
+        super({ key: "CutsceneScene" });
+      }
+      create(data) {
+        this.selectedHero = data.selectedHero;
+        this.add.rectangle(0, 0, 1280, 720, 0x220033).setOrigin(0); // Deep purple/magenta background
+        this.add.rectangle(0, 560, 1280, 160, 0x440066).setOrigin(0); // Crystal floor
+
+        // Draw glowing crystal spires
+        for (let i = 0; i < 20; i++) {
+          this.add
+            .rectangle(
+              i * 160,
+              240 + Math.random() * 160,
+              80,
+              560,
+              0xff66cc,
+              0.7,
+            )
+            .setOrigin(0); // Pink crystals
+          this.add
+            .rectangle(
+              i * 160 + 80,
+              160 + Math.random() * 200,
+              60,
+              640,
+              0x66ccff,
+              0.5,
+            )
+            .setOrigin(0); // Cyan crystals
+        }
+
+        // Draw the team
+        let teamXs = [240, 640, 1040];
+        let i = 0;
+        for (let key in CHARACTERS) {
+          let rectColor = CHARACTERS[key].color;
+          this.add
+            .rectangle(teamXs[i], 480, 64, 128, rectColor)
+            .setOrigin(0.5, 1);
+          i++;
+        }
+
+        let dialogueBox = this.add
+          .rectangle(640, 640, 1200, 120, 0x000000, 0.8)
+          .setOrigin(0.5);
+        this.dialogueText = this.add
+          .text(640, 640, "", {
+            font: "bold 28px Courier",
+            fill: "#fff",
+            wordWrap: { width: 1150 },
+            align: "left",
+          })
+          .setOrigin(0.5);
+
+        this.dialogueSequence = [
+          {
+            speaker: "Naga Soul",
+            text: "This is Noktara, a realm where memories manifest as shadows. The Collective Memory is strong here.",
+          },
+          {
+            speaker: "Dr. Jack",
+            text: "And where the shadows hide the truth. We need to be careful, Naga. The False Historian is known to manipulate memories.",
+          },
+          { speaker: "Naga Soul", text: "We'll uncover the truth, no matter how distorted it may be. Let's move out." },
+          { speaker: "System", text: "PRESS ENTER TO ENTER THE SHADOW REALM" },
+        ];
+        this.currentLine = 0;
+        this.showNextLine();
+
+        this.input.keyboard.on("keydown-ENTER", () => {
+          if (this.currentLine < this.dialogueSequence.length) {
+            this.showNextLine();
+          } else {
+            this.scene.start("GameScene", {
+              selectedHero: this.selectedHero,
+            });
+          }
+        });
+      }
+      showNextLine() {
+        let d = this.dialogueSequence[this.currentLine];
+        this.dialogueText.setText(`${d.speaker}: ${d.text}`);
+        this.currentLine++;
+      }
+    }
+
+    // --- SCENE 3: GAMEPLAY (LEVEL 1) ---
+    class GameScene extends Phaser.Scene {
+      constructor() {
+        super({ key: "GameScene" });
+      }
+      preload() {
+        // Curt Soul (Chibi) - Minimal Set
+        this.load.image(
+          "default_idle_1",
+          "assets/images/characters/CHIBI_SOUL/idle.png",
+        );
+
+        // Forward/Run frame
+        this.load.image(
+          "default_forward",
+          "assets/images/characters/CHIBI_SOUL/forward.png",
+        );
+
+        // Jumps
+        for (let i = 1; i <= 6; i++) {
+          this.load.image(`chibi_jump_up_${i}`, `assets/images/characters/CHIBI_SOUL/jump/jump up/jump_up_0${i}.png`);
+          this.load.image(`chibi_jump_fwd_${i}`, `assets/images/characters/CHIBI_SOUL/jump/jump+movement/jump_up_0${i}.png`);
+        }
+
+        // 9-Hit Combo Series
+        const meleeCounts = [3, 3, 2, 3, 2, 2, 4, 2, 2];
+        for (let c = 1; c <= 9; c++) {
+          for (let f = 1; f <= meleeCounts[c - 1]; f++) {
+            this.load.image(`default_atk_${c}_${f}`, `assets/images/characters/CHIBI_SOUL/attack/melee_attack_combo/melee_0${c}/melee${c}_0${f}.png`);
+          }
+        }
+
+        // Specials Restructured
+        for (let i = 1; i <= 3; i++) {
+          this.load.image(`special_charge_${i}`, `assets/images/characters/CHIBI_SOUL/attack/special_blast_attack/charge/special_blast_attack_0${i}.png`);
+        }
+        for (let i = 1; i <= 3; i++) {
+          this.load.image(`special_fire_${i}`, `assets/images/characters/CHIBI_SOUL/attack/special_blast_attack/fire/special_blast_attack_0${i + 3}.png`);
+        }
+        for (let i = 1; i <= 2; i++) {
+          this.load.image(`special_cooldown_${i}`, `assets/images/characters/CHIBI_SOUL/attack/special_blast_attack/cooldown/special_blast_attack_0${i + 6}.png`);
+        }
+        for (let i = 1; i <= 4; i++) {
+          this.load.image(`chibi_proj_${i}`, `assets/images/characters/CHIBI_SOUL/attack/special_blast_attack/special_blast_projectile_animation/special_blast_attack_projectile_0${i}.png`);
+        }
+
+
+
+        // Use a run frame for jump if jump isn't mapped
+        this.load.image(
+          "default_jump_1",
+          "assets/images/characters/CHIBI_SOUL/run/run_05.png",
+        );
+
+        // Dr Ignite - Minimal Set
+        this.load.image(
+          "ignite_idle_1",
+          "assets/images/characters/dr-ignite/frames/idle_01.png",
+        );
+        this.load.image(
+          "ignite_idle_2",
+          "assets/images/characters/dr-ignite/frames/idle_02.png",
+        );
+        this.load.image(
+          "ignite_run_1",
+          "assets/images/characters/dr-ignite/frames/run_1.png",
+        );
+        this.load.image(
+          "ignite_run_2",
+          "assets/images/characters/dr-ignite/frames/run_2.png",
+        );
+        this.load.image(
+          "ignite_run_3",
+          "assets/images/characters/dr-ignite/frames/run_3.png",
+        );
+        this.load.image(
+          "ignite_atk_1",
+          "assets/images/characters/dr-ignite/frames/combo_0.png",
+        );
+        this.load.image(
+          "ignite_atk_2",
+          "assets/images/characters/dr-ignite/frames/combo_01.png",
+        );
+        this.load.image(
+          "ignite_atk_3",
+          "assets/images/characters/dr-ignite/frames/combo_02.png",
+        );
+        this.load.image(
+          "ignite_jump_1",
+          "assets/images/characters/dr-ignite/frames/jump_01.png",
+        );
+        this.load.image(
+          "ignite_jump_2",
+          "assets/images/characters/dr-ignite/frames/jump_02.png",
+        );
+
+        // Cherry - Minimal Set
+        this.load.image(
+          "cherry_idle_1",
+          "assets/images/characters/cherry/cherry_0003.png",
+        );
+        this.load.image(
+          "cherry_idle_2",
+          "assets/images/characters/cherry/cherry_0006.png",
+        );
+        this.load.image(
+          "cherry_run_1",
+          "assets/images/characters/cherry/cherry_0024.png",
+        );
+        this.load.image(
+          "cherry_run_2",
+          "assets/images/characters/cherry/cherry_0026.png",
+        );
+        this.load.image(
+          "cherry_run_3",
+          "assets/images/characters/cherry/cherry_0028.png",
+        );
+        this.load.image(
+          "cherry_run_4",
+          "assets/images/characters/cherry/cherry_0029.png",
+        );
+        this.load.image(
+          "cherry_atk_1",
+          "assets/images/characters/cherry/cherry_0233.png",
+        );
+        this.load.image(
+          "cherry_atk_2",
+          "assets/images/characters/cherry/cherry_0235.png",
+        );
+        this.load.image(
+          "cherry_atk_3",
+          "assets/images/characters/cherry/cherry_0237.png",
+        );
+        this.load.image(
+          "cherry_jump_1",
+          "assets/images/characters/cherry/cherry_0130.png",
+        );
+        this.load.image(
+          "cherry_jump_2",
+          "assets/images/characters/cherry/cherry_0132.png",
+        );
+
+        // Enemies (Shadow Phantoms - Drones)
+        for (let i = 1; i <= 4; i++) {
+          this.load.image(`drone_${i}`, `new_tilesets/warped_city_files/SPRITES/misc/drone/drone-${i}.png`);
+        }
+        this.load.image("boss3", "assets/images/enemies/cyber_slimes/frame_000.png"); // Placeholder boss tinted in create
+
+        // Stage 2 Boss generated previously
+        // Stage 3 Boss (The False Historian)
+        this.load.image("boss3", "assets/images/enemies/false_historian.png");
+
+        // Level Map & Tiled JSON
+        this.load.image("warped_tiles", "new_tilesets/warped_city_files/ENVIRONMENT/tileset.png");
+        this.load.image("warped_bg", "new_tilesets/warped_city_files/ENVIRONMENT/background/buildings-bg.png");
+        this.load.image("warped_near", "new_tilesets/warped_city_files/ENVIRONMENT/background/near-buildings-bg.png");
+        this.load.image("warped_sky_a", "new_tilesets/warped_city_files/ENVIRONMENT/background/skyline-a.png");
+        this.load.image("warped_sky_b", "new_tilesets/warped_city_files/ENVIRONMENT/background/skyline-b.png");
+        this.load.tilemapTiledJSON("level_3_map", "assets/tilemaps/warped_city.tmj");
+      }
+
+      create(data) {
+        this.heroData = CHARACTERS[data.selectedHero];
+        this.heroKey = this.heroData.key;
+        // --- TILEMAP SYSTEM ---
+        const map = this.make.tilemap({ key: "level_3_map" });
+        const tileset = map.addTilesetImage("tileset", "warped_tiles");
+        const bgTileset = map.addTilesetImage("buildings-bg", "warped_bg");
+        const nearTileset = map.addTilesetImage("near-buildings-bg", "warped_near");
+        const skyATileset = map.addTilesetImage("skyline-a", "warped_sky_a");
+        const skyBTileset = map.addTilesetImage("skyline-b", "warped_sky_b");
+
+        // Create Layers (based on warped_city.tmj structure)
+        map.createLayer("Tile Layer 1", [tileset, skyATileset, skyBTileset], 0, 0).setScale(scale);
+        map.createLayer("Tile Layer 2", [nearTileset], 0, 0).setScale(scale);
+        map.createLayer("Tile Layer 3", [bgTileset], 0, 0).setScale(scale);
+
+        // Dynamically size the world bounds based on the MAP height, not a hardcoded strip!
+        const scale = 3;
+        const scaledWidth = map.widthInPixels * scale;
+        const scaledHeight = map.heightInPixels * scale;
+
+        // Physics world setup
+        this.cameraLock = { min: 0, max: scaledWidth };
+        this.physics.world.gravity.y = 0;
+        this.physics.world.setBounds(0, 0, scaledWidth, scaledHeight);
+
+        bgLayer.setScale(scale);
+
+        // Note: We DO NOT create Arcade physics bounding boxes for `buildings` in a 2.5D beat-em-up!
+        // The character's 2D sprite body is 280px tall. If we put a wall collision at Y=400, their head 
+        // hits it while their feet are at Y=680, trapping them!
+        // We only use `walkablePolygon` to constrain their feet (`baseLaneY`).
+
+        // Parse Walkable Boundary Polygon
+        this.walkablePolygon = null;
+        const boundaryLayer = map.getObjectLayer("boundary");
+
+        if (boundaryLayer && boundaryLayer.objects && boundaryLayer.objects.length > 0) {
+          let polyObj = boundaryLayer.objects[0];
+
+          if (polyObj.polygon) {
+            let points = polyObj.polygon.map(p => ({
+              x: (polyObj.x + p.x) * scale,
+              y: (polyObj.y + p.y) * scale
+            }));
+            this.walkablePolygon = new Phaser.Geom.Polygon(points);
+          }
+        }
+
+        this.physics.add.collider(this.player, this.buildingsGroup);
+
+        // --- TRANSITION SYSTEM (Exits) ---
+        this.exitsGroup = this.physics.add.staticGroup();
+        const exitsLayer = map.getObjectLayer("exits");
+        if (exitsLayer && exitsLayer.objects) {
+          exitsLayer.objects.forEach(e => {
+            let ew = e.width * scale;
+            let eh = e.height * scale;
+            let ex = (e.x * scale) + (ew / 2);
+            let ey = (e.y * scale) + (eh / 2);
+            let exit = this.add.rectangle(ex, ey, ew, eh, 0x00ff00, 0);
+            this.physics.add.existing(exit, true);
+            this.exitsGroup.add(exit);
+            const targetProp = e.properties && e.properties.find(p => p.name === "target");
+            exit.targetScene = targetProp ? targetProp.value : "Level_4_Virella.html";
+          });
+        }
+
+        this.physics.add.overlap(this.player, this.exitsGroup, (p, exit) => {
+          if (this.levelComplete) {
+            this.scene.pause();
+            window.location.href = exit.targetScene;
+          }
+        }, null, this);
+
+        // Default constraints fallback
+        this.walkableZones = [
+          { minX: 0, maxX: scaledWidth, minY: 550, maxY: 765 }, // Street lane scaled 3x
+        ];
+
+        // Player setup
+        const startTex =
+          this.heroKey === "default"
+            ? "default_idle_1"
+            : `${this.heroKey}_idle_1`;
+        // Start player within the first walkable zone
+        this.player = this.physics.add
+          .sprite(200, 660, startTex)
+          .setOrigin(0.5, 1);
+
+        // Scale adjustments and 2.5D Foot-Hitbox setup
+        if (this.heroKey === "default") {
+          this.player.setScale(1);
+          // Set body to only the feet area! Width 100, Height 40, offset to the bottom.
+          // Original sprite is ~200x200, but size was 140x280.
+          this.player.body.setSize(100, 40);
+          this.player.body.setOffset(50, 160); // Adjust offset based on sprite frame
+        } else if (this.heroKey === "cherry" || this.heroKey === "ignite") {
+          this.player.setScale(0.8);
+          this.player.body.setSize(100, 40);
+          this.player.body.setOffset(60, 260);
+        }
+
+        this.player.setCollideWorldBounds(true);
+        // Restore building colliders now that the body is just the feet!
+        this.physics.add.collider(this.player, this.buildingsGroup);
+        this.player.setMaxVelocity(400, 240); // 4x speed
+        this.player.setDrag(3200, 3200); // 4x friction
+        this.player.hp = 100;
+        this.player.isAttacking = false;
+
+        // --- 2.5D MECHANICS ---
+        this.player.baseLaneY = 660; // Visible zone 3x
+        this.player.jumpZ = 0;
+        this.player.jumpVelZ = 0;
+        this.player.is25DJumping = false;
+
+        // Combo system
+        this.player.combo = 0;
+        this.player.lastAttackTime = 0;
+
+        // Shadow for visual depth ground truth
+        this.playerShadow = this.add
+          .ellipse(200, 560, 120, 40, 0x000000, 0.5)
+          .setOrigin(0.5, 0.5);
+
+        // --- ANIMATIONS ---
+        // Curt Soul (Chibi)
+        this.anims.create({
+          key: "default_idle",
+          frames: [{ key: "default_idle_1" }],
+          frameRate: 8,
+          repeat: -1,
+        });
+        // Running mapped to forward.png
+        this.anims.create({
+          key: "default_run",
+          frames: [{ key: "default_forward" }],
+          frameRate: 15,
+          repeat: -1,
+        });
+
+        // Chibi Soul 9-Hit Combo
+        const meleeAnimCounts = [3, 3, 2, 3, 2, 2, 4, 2, 2];
+        for (let c = 1; c <= 9; c++) {
+          let frames = [];
+          for (let f = 1; f <= meleeAnimCounts[c - 1]; f++) {
+            frames.push({ key: `default_atk_${c}_${f}` });
+          }
+          this.anims.create({
+            key: `default_atk${c}`,
+            frames: frames,
+            frameRate: 15,
+            repeat: 0,
+          });
+        }
+
+        // Specials
+        this.anims.create({
+          key: "chibi_special_charge",
+          frames: [
+            { key: "special_charge_1" },
+            { key: "special_charge_2" },
+            { key: "special_charge_3" }
+          ],
+          frameRate: 12,
+          repeat: 0,
+        });
+        this.anims.create({
+          key: "chibi_special_fire",
+          frames: [
+            { key: "special_fire_1" },
+            { key: "special_fire_2" },
+            { key: "special_fire_3" }
+          ],
+          frameRate: 12,
+          repeat: 0,
+        });
+        this.anims.create({
+          key: "chibi_special_cooldown",
+          frames: [
+            { key: "special_cooldown_1" },
+            { key: "special_cooldown_2" }
+          ],
+          frameRate: 8,
+          repeat: 0,
+        });
+        this.anims.create({
+          key: "chibi_special_proj",
+          frames: [
+            { key: "chibi_proj_1" },
+            { key: "chibi_proj_2" },
+            { key: "chibi_proj_3" },
+            { key: "chibi_proj_4" }
+          ],
+          frameRate: 15,
+          repeat: -1,
+        });
+
+        this.anims.create({
+          key: "chibi_jump_up",
+          frames: [
+            { key: "chibi_jump_up_1" },
+            { key: "chibi_jump_up_2" },
+            { key: "chibi_jump_up_3" },
+            { key: "chibi_jump_up_4" },
+            { key: "chibi_jump_up_5" },
+            { key: "chibi_jump_up_6" },
+          ],
+          frameRate: 12,
+          repeat: 0,
+        });
+
+        this.anims.create({
+          key: "chibi_jump_fwd",
+          frames: [
+            { key: "chibi_jump_fwd_1" },
+            { key: "chibi_jump_fwd_2" },
+            { key: "chibi_jump_fwd_3" },
+            { key: "chibi_jump_fwd_4" },
+            { key: "chibi_jump_fwd_5" },
+            { key: "chibi_jump_fwd_6" },
+          ],
+          frameRate: 12,
+          repeat: 0,
+        });
+
+        // Ignite
+        this.anims.create({
+          key: "ignite_idle",
+          frames: [{ key: "ignite_idle_1" }, { key: "ignite_idle_2" }],
+          frameRate: 6,
+          repeat: -1,
+        });
+        this.anims.create({
+          key: "ignite_run",
+          frames: [
+            { key: "ignite_run_1" },
+            { key: "ignite_run_2" },
+            { key: "ignite_run_3" },
+          ],
+          frameRate: 10,
+          repeat: -1,
+        });
+        this.anims.create({
+          key: "ignite_atk",
+          frames: [
+            { key: "ignite_atk_1" },
+            { key: "ignite_atk_2" },
+            { key: "ignite_atk_3" },
+          ],
+          frameRate: 12,
+          repeat: 0,
+        });
+        this.anims.create({
+          key: "ignite_jump",
+          frames: [{ key: "ignite_jump_1" }, { key: "ignite_jump_2" }],
+          frameRate: 8,
+          repeat: 0,
+        });
+
+        // Cherry
+        this.anims.create({
+          key: "cherry_idle",
+          frames: [{ key: "cherry_idle_1" }, { key: "cherry_idle_2" }],
+          frameRate: 6,
+          repeat: -1,
+        });
+        this.anims.create({
+          key: "cherry_run",
+          frames: [
+            { key: "cherry_run_1" },
+            { key: "cherry_run_2" },
+            { key: "cherry_run_3" },
+            { key: "cherry_run_4" },
+          ],
+          frameRate: 10,
+          repeat: -1,
+        });
+        this.anims.create({
+          key: "cherry_atk",
+          frames: [
+            { key: "cherry_atk_1" },
+            { key: "cherry_atk_2" },
+            { key: "cherry_atk_3" },
+          ],
+          frameRate: 15,
+          repeat: 0,
+        });
+        this.anims.create({
+          key: "cherry_jump",
+          frames: [{ key: "cherry_jump_1" }, { key: "cherry_jump_2" }],
+          frameRate: 10,
+          repeat: 0,
+        });
+
+        // Shadow Phantom (Drone) animations
+        this.anims.create({
+          key: "phantom_move",
+          frames: [
+            { key: "drone_1" },
+            { key: "drone_2" },
+            { key: "drone_3" },
+            { key: "drone_4" },
+          ],
+          frameRate: 10,
+          repeat: -1,
+        });
+
+        // Use phantom_move as default for shadow enemies in this level
+        this.enemyAnimKey = "phantom_move";
+
+        // Groups
+        this.enemies = this.physics.add.group();
+        this.hitboxes = this.physics.add.group();
+
+        // Input
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.attackKey = this.input.keyboard.addKey("X");
+        this.projectileKey = this.input.keyboard.addKey("C");
+        this.jumpKey = this.input.keyboard.addKey(
+          Phaser.Input.Keyboard.KeyCodes.SPACE,
+        );
+
+        // --- MONOCHROME NOIR FILTER ---
+        this.cameras.main.setPostPipeline(GrayscalePipeline);
+
+        // --- CAMERA SETUP (Horizontal Only) ---
+        this.cameras.main.setBounds(0, 0, scaledWidth, 768);
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+        this.cameras.main.setDeadzone(300, 100);
+        this.isCameraTweening = false;
+
+        // Stage 3 Waves (from Groq)
+        this.waves = [
+          { x: 300, count: 5, triggered: false, type: "shadow_phantom" },
+          { x: 1200, count: 3, triggered: false, type: "memory_wraith" },
+          { x: 2100, count: 2, triggered: false, type: "forgotten_specter" },
+          { x: 2600, isBoss: true, triggered: false, bossKey: "boss3" },
+        ];
+        this.currentWave = -1;
+        this.levelComplete = false;
+
+        // UI
+        this.hpText = this.add
+          .text(20, 20, "HP: 100", {
+            font: "bold 32px Courier",
+            fill: "#0ff",
+          })
+          .setScrollFactor(0);
+        this.msgText = this.add
+          .text(640, 60, "RESTORE THE MEMORY...", {
+            font: "bold 42px Courier",
+            fill: "#fff",
+          })
+          .setScrollFactor(0)
+          .setOrigin(0.5);
+
+        // Collisions
+        this.physics.add.overlap(
+          this.hitboxes,
+          this.enemies,
+          this.hitEnemy,
+          null,
+          this,
+        );
+      }
+
+      update() {
+        if (this.player.hp <= 0) return;
+
+        // --- SPRITE NORMALIZATION ---
+        if (this.heroKey === "default") {
+          const targetHeight = 183;
+          const normalizedScale = targetHeight / this.player.frame.height;
+          this.player.setScale(normalizedScale);
+        }
+
+        // 2.5D Movement Logic (4x speed)
+        let speedX = 400;
+        let speedY = 320; // Up/Down lane speed
+        let moving = false;
+
+        if (!this.player.isAttacking) {
+          if (this.cursors.left.isDown) {
+            this.player.setVelocityX(this.controlsReversed ? speedX : -speedX);
+            this.player.flipX = !this.controlsReversed;
+            moving = true;
+          } else if (this.cursors.right.isDown) {
+            this.player.setVelocityX(this.controlsReversed ? -speedX : speedX);
+            this.player.flipX = this.controlsReversed;
+            moving = true;
+          }
+
+          // Only allow moving up/down (changing depth) if NOT jumping
+          if (!this.player.is25DJumping) {
+            if (this.cursors.up.isDown) {
+              this.player.setVelocityY(-speedY);
+              moving = true;
+            } else if (this.cursors.down.isDown) {
+              this.player.setVelocityY(speedY);
+              moving = true;
+            }
+          } else {
+            this.player.setVelocityY(0); // Prevent zooming into background while in middle of a jump
+          }
+        }
+
+        // Clamping to Walkable Zones!
+        if (!this.player.is25DJumping) {
+          // Because velocity changes Y, sync baseLaneY
+          this.player.baseLaneY = this.player.y;
+        }
+
+        // Prefer the Tiled Polygon constraints
+        if (this.walkablePolygon) {
+          if (!Phaser.Geom.Polygon.Contains(this.walkablePolygon, this.player.x, this.player.baseLaneY)) {
+            // Out of polygon bounds! Revert position
+            this.player.x = this.player.previousX || this.player.x;
+            this.player.baseLaneY = this.player.previousBaseLaneY || this.player.baseLaneY;
+            // Halt velocity against the wall
+            if (this.cursors.left.isDown || this.cursors.right.isDown) this.player.setVelocityX(0);
+            if (this.cursors.up.isDown || this.cursors.down.isDown) this.player.setVelocityY(0);
+          }
+          this.player.previousX = this.player.x;
+          this.player.previousBaseLaneY = this.player.baseLaneY;
+
+          if (!this.player.is25DJumping) {
+            this.player.y = this.player.baseLaneY;
+          }
+        } else {
+          // Fallback manual clamping
+          let allowed = false;
+          let clampY = this.player.baseLaneY;
+          for (let z of this.walkableZones) {
+            if (this.player.x >= z.minX && this.player.x <= z.maxX) {
+              if (this.player.baseLaneY >= z.minY && this.player.baseLaneY <= z.maxY) {
+                allowed = true; break;
+              } else {
+                clampY = Phaser.Math.Clamp(this.player.baseLaneY, z.minY, z.maxY);
+                allowed = true;
+              }
+            }
+          }
+          if (allowed) this.player.baseLaneY = clampY;
+          if (!this.player.is25DJumping) this.player.y = clampY;
+        }
+
+        // Jump logic (Space Bar)
+        if (
+          Phaser.Input.Keyboard.JustDown(this.jumpKey) &&
+          !this.player.isAttacking &&
+          !this.player.is25DJumping
+        ) {
+          this.player.is25DJumping = true;
+          this.player.jumpZ = 0;
+          this.player.jumpVelZ = -24; // Initial burst upward (4x scale)
+        }
+
+        if (this.player.is25DJumping) {
+          this.player.jumpZ += this.player.jumpVelZ;
+          this.player.jumpVelZ += 1.2; // Gravity pulls it back to 0 (4x scale)
+
+          // Actual physical screen Y is the lane base coordinate + the Z offset
+          this.player.y = this.player.baseLaneY + this.player.jumpZ;
+
+          // Land back on the ground level
+          if (this.player.jumpVelZ > 0 && this.player.jumpZ >= 0) {
+            this.player.jumpZ = 0;
+            this.player.y = this.player.baseLaneY;
+            this.player.is25DJumping = false;
+          }
+        }
+
+        // Ensure shadow follows the player X and stays locked to the baseLaneY
+        this.playerShadow.x = this.player.x;
+        this.playerShadow.y = this.player.baseLaneY;
+
+        // Handle Animations
+        if (this.player.isAttacking) {
+          if (this.heroKey === "default") {
+            // Priority to the specific current attack
+            if (this.player.isBlasting) {
+              // Don't interrupt the charging/firing sequence!
+            } else {
+              // Curt Soul mapped to specific combo step
+              this.player.anims.play(`default_atk${this.player.combo}`, true);
+            }
+          } else {
+            // Others fallback to single atk anim for now
+            this.player.anims.play(`${this.heroKey}_atk`, true);
+          }
+        } else if (this.player.is25DJumping) {
+          if (this.heroKey === "default") {
+            if (this.player.body.velocity.x !== 0) {
+              this.player.anims.play("chibi_jump_fwd", true);
+            } else {
+              this.player.anims.play("chibi_jump_up", true);
+            }
+          } else {
+            this.player.anims.play(`${this.heroKey}_jump`, true);
+          }
+        } else if (moving) {
+          this.player.anims.play(
+            this.heroKey === "default"
+              ? "default_run"
+              : `${this.heroKey}_run`,
+            true,
+          );
+        } else {
+          this.player.anims.play(
+            this.heroKey === "default"
+              ? "default_idle"
+              : `${this.heroKey}_idle`,
+            true,
+          );
+        }
+
+        // Attack logic (Combo System)
+        // Window to continue combo: Can't span combo longer than 1200ms
+        if (this.time.now - this.player.lastAttackTime > 1200) {
+          this.player.combo = 0;
+        }
+
+        if (
+          Phaser.Input.Keyboard.JustDown(this.attackKey) &&
+          !this.player.isAttacking
+        ) {
+          this.player.isAttacking = true;
+          this.player.setVelocity(0, 0);
+
+          // Iterate combo (Max 9 for Curt Soul)
+          this.player.combo++;
+          if (this.player.combo > 9) this.player.combo = 1;
+          this.player.lastAttackTime = this.time.now;
+
+          // Hit direction
+          let hx = this.player.flipX
+            ? this.player.x - 120
+            : this.player.x + 120;
+
+          // Finisher logic
+          let isFinisher = this.player.combo === 9;
+          let hitSize = isFinisher ? 160 : 96; // 4x scale
+          let hitbox = this.add.rectangle(
+            hx,
+            this.player.baseLaneY - 128,
+            hitSize,
+            hitSize,
+            0xffffff,
+            0.5,
+          );
+
+          this.physics.add.existing(hitbox);
+          this.hitboxes.add(hitbox);
+          hitbox.body.setAllowGravity(false);
+
+          // Attach properties to hitbox for enemy logic
+          hitbox.damage = isFinisher ? 40 : 10;
+          hitbox.knockback = isFinisher ? 400 : 80;
+
+          // Remove hitbox after active frames
+          let activeTime = isFinisher ? 150 : 100;
+          this.time.delayedCall(activeTime, () => {
+            hitbox.destroy();
+          });
+
+          // Recovery frames dynamically matched to frame count at 10fps
+          const meleeAnimCounts = [3, 3, 2, 3, 2, 2, 4, 2, 2];
+          let currentAnimFrames = meleeAnimCounts[this.player.combo - 1];
+          let recoveryTime = isFinisher ? 600 : (currentAnimFrames * 100);
+
+          this.time.delayedCall(recoveryTime, () => {
+            this.player.isAttacking = false;
+          });
+        }
+
+        // Projectiles
+        if (
+          Phaser.Input.Keyboard.JustDown(this.projectileKey) &&
+          !this.player.isAttacking
+        ) {
+          this.player.isAttacking = true;
+          this.player.isBlasting = true;
+          this.player.combo = 0; // reset
+          this.player.setVelocity(0, 0);
+
+          // 1. Charge Animation
+          if (this.heroKey === "default") {
+            this.player.anims.play("chibi_special_charge", true);
+
+            this.time.delayedCall(250, () => {
+              this.player.anims.play("chibi_special_fire", true);
+
+              // Spawn projectile staggered 
+              let px = this.player.flipX ? this.player.x - 80 : this.player.x + 80;
+              let proj = this.physics.add.sprite(
+                px,
+                this.player.baseLaneY - 90, // Height of hands (lowered from 140)
+                "chibi_proj_1",
+              );
+
+              // Add to hitboxes first
+              this.hitboxes.add(proj);
+
+              // Apply physics properties (do this AFTER adding to group to bypass overrides)
+              proj.setScale(1.5); // Larger blast
+              proj.setDepth(this.player.baseLaneY);
+              proj.body.setAllowGravity(false);
+              proj.vx = this.player.flipX ? -2000 : 2000; // Fast!
+              proj.body.setVelocityX(proj.vx);
+              proj.anims.play("chibi_special_proj", true);
+
+              proj.damage = 35;
+              proj.knockback = 150;
+
+              this.time.delayedCall(1500, () => {
+                if (proj && proj.active) proj.destroy();
+              });
+
+              // Cooldown
+              this.time.delayedCall(250, () => {
+                this.player.anims.play("chibi_special_cooldown", true);
+                this.time.delayedCall(250, () => {
+                  this.player.isAttacking = false;
+                  this.player.isBlasting = false;
+                });
+              });
+            });
+          } else {
+            // generic fallback
+            this.player.anims.play(`${this.heroKey}_atk`, true);
+            this.time.delayedCall(600, () => {
+              this.player.isAttacking = false;
+              this.player.isBlasting = false;
+            });
+          }
+        }
+
+        // Z-Sorting (fake 3D depth)
+        // Use baseLaneY for depth sorting! That's the secret to true 2.5D.
+        this.player.setDepth(this.player.baseLaneY);
+        this.playerShadow.setDepth(this.player.baseLaneY - 1);
+
+        this.enemies.getChildren().forEach((e) => {
+          e.setDepth(e.y);
+          this.enemyAI(e);
+        });
+
+        // --- CAMERA LOCKS ---
+        if (this.player.x < this.cameraLock.min) this.player.x = this.cameraLock.min;
+        if (this.player.x > this.cameraLock.max) this.player.x = this.cameraLock.max;
+
+        // Force camera horizontal strictly
+        if (this.cameras.main.scrollX < 0) this.cameras.main.setScroll(0, 0);
+        if (this.cameras.main.scrollX > (this.physics.world.bounds.width - 1280)) this.cameras.main.setScroll(this.cameras.main.scrollX, 0);
+
+        // Check waves
+        this.checkWaves();
+      }
+
+      checkWaves() {
+        // Multi-Axis Triggers
+        let pX = this.player.x;
+        let pY = this.player.y;
+        for (let i = 0; i < this.waves.length; i++) {
+          let w = this.waves[i];
+          // Trigger if we approach the location
+          if (
+            !w.triggered &&
+            Phaser.Math.Distance.Between(pX, pY, w.x, w.y) < 600
+          ) {
+            w.triggered = true;
+            this.currentWave = i;
+            this.lockArena(w.x, w.y);
+            if (w.isBoss) this.spawnBoss(w.x, w.y);
+            else this.spawnEnemies(w.count, w.x, w.y);
+            break;
+          }
+        }
+
+        // Unlock criteria
+        if (this.currentWave !== -1 && this.enemies.countActive() === 0) {
+          this.unlockArena();
+        }
+      }
+
+      lockArena(targetX, targetY) {
+        this.msgText.setText("DEFEAT ENEMIES!");
+        this.cameraLock.max = targetX + 640;
+        this.cameraLock.min = Math.max(0, targetX - 640);
+        // Lock onto the current area horizontally only
+        this.cameras.main.setBounds(this.cameraLock.min, 0, 1280, 768);
+      }
+
+      unlockArena() {
+        this.msgText.setText("FIND EXIT!");
+        this.cameraLock.max = this.physics.world.bounds.width;
+        this.cameraLock.min = 0;
+        this.cameras.main.setBounds(0, 0, this.physics.world.bounds.width, 768);
+        this.currentWave = -1;
+      }
+
+      spawnEnemies(count, areaX, areaY) {
+        for (let i = 0; i < count; i++) {
+          let ex = Phaser.Math.Between(areaX - 200, areaX + 200);
+          let ey = Phaser.Math.Between(550, 768); // street lane
+          let e = this.enemies.create(ex, ey, "drone_1").setOrigin(0.5, 1);
+          e.setScale(3); // Native resolution scaling
+          e.hp = 30;
+          e.state = "chasing";
+          e.anims.play("phantom_move", true);
+          e.setDrag(3200, 3200);
+        }
+      }
+
+      spawnBoss(areaX, areaY) {
+        this.msgText.setText("BOSS: THE FALSE HISTORIAN");
+        let ex = areaX - 320;
+        let ey = 660;
+        let e = this.enemies.create(ex, ey, "boss3").setOrigin(0.5, 1);
+        e.setScale(3); // Match pixel art scale
+        e.setTint(0x333333); // Darker shadow boss
+        e.hp = 500;
+        e.state = "boss_phase";
+        e.isBoss = true;
+        e.setDrag(3200, 3200);
+
+        // Memory Rewriting Mechanic (every 7 seconds)
+        this.time.addEvent({
+          delay: 7000,
+          callback: () => {
+            if (e.active && e.hp > 0) {
+              this.msgText.setText("MEMORY REWRITTEN: CONTROLS REVERSED!");
+              this.player.setTint(0x00ff00);
+              this.controlsReversed = true;
+              this.time.delayedCall(3000, () => {
+                this.controlsReversed = false;
+                this.player.clearTint();
+                this.msgText.setText("BOSS: THE FALSE HISTORIAN");
+              });
+            }
+          },
+          loop: true
+        });
+      }
+
+      enemyAI(e) {
+        if (e.state === "stunned") return;
+
+        let dist = Phaser.Math.Distance.BetweenPoints(this.player, e);
+        let speed = e.isBoss ? 80 : 160;
+
+        if (dist > 160) {
+          this.physics.moveToObject(e, this.player, speed);
+          e.flipX = e.body.velocity.x < 0;
+        } else {
+          e.body.setVelocity(0, 0);
+          // Attack chance
+          if (Phaser.Math.Between(1, 100) > 95) {
+            this.player.hp -= e.isBoss ? 10 : 5;
+            this.hpText.setText(`HP: ${this.player.hp}`);
+            this.player.setTint(0xff0000);
+            this.time.delayedCall(100, () => this.player.clearTint());
+
+            // Knockback
+            let dir = this.player.x < e.x ? -1 : 1;
+            this.player.body.setVelocityX(dir * 800); // 4x knockback
+
+            if (this.player.hp <= 0) {
+              this.msgText.setText("GAME OVER\nRefresh to restart");
+              this.player.setTint(0x555555);
+            }
+          }
+        }
+      }
+
+      hitEnemy(hitbox, enemy) {
+        if (enemy.state === "stunned") return; // Prevent multi-hit overlap spam briefly
+
+        // Take damage based on the hitbox
+        let dmg = hitbox.damage || 15;
+        enemy.hp -= dmg;
+        enemy.state = "stunned";
+        enemy.setTint(0xffffff);
+
+        let dir = this.player.flipX ? -1 : 1;
+        let kb = hitbox.knockback || 150;
+        let isFinisher = kb > 200; // Finisher knockback is 400
+
+        // 1. Hit Magnetism on normal hits (pulls enemy slightly in)
+        if (!isFinisher) {
+          let dist = Math.abs(this.player.x - enemy.x);
+          if (dist > 100 && dist < 300) {
+            enemy.x -= dir * 20; // gentle pull toward player
+          }
+        }
+
+        // 2. Hitpause / Freeze Frames (Impact Feel)
+        this.player.anims.pause();
+        if (enemy.anims) enemy.anims.pause();
+
+        // Temporarily halt player/enemy velocity for the freeze frame
+        enemy.body.setVelocity(0, 0);
+        this.player.body.setVelocity(0, 0);
+
+        this.time.delayedCall(60, () => {
+          if (this.player && this.player.anims) this.player.anims.resume();
+          if (enemy && enemy.anims) enemy.anims.resume();
+
+          // Apply actual knockback AFTER the freeze frame
+          if (enemy && enemy.body) {
+            enemy.body.setVelocity(dir * kb, 0);
+          }
+        });
+
+        if (enemy.hp <= 0) {
+          if (enemy.isBoss && !this.levelComplete) {
+            this.levelComplete = true;
+            this.msgText.setText("AREA CLEARED! PROCEED REAR RIGHT!");
+
+            // Create Exit Zone
+            let exitX = enemy.x + 300;
+            let exitY = this.player.baseLaneY;
+            this.exitZone = this.add.rectangle(exitX, exitY, 150, 400, 0x00ff00, 0.3);
+            this.physics.add.existing(this.exitZone);
+            this.exitZone.body.setAllowGravity(false);
+
+            // Blinking Arrow
+            let arrow = this.add.text(exitX, exitY - 200, "V", {
+              font: "bold 80px Courier",
+              fill: "#0f0"
+            }).setOrigin(0.5);
+
+            this.tweens.add({
+              targets: arrow,
+              y: arrow.y + 20,
+              duration: 500,
+              yoyo: true,
+              repeat: -1
+            });
+
+            this.physics.add.overlap(this.player, this.exitZone, () => {
+              this.scene.pause();
+              // Transition logic goes here. For prototypes, we redirect to another HTML file or alert.
+              window.location.href = "index.html"; // Redirects to main page or next part
+            }, null, this);
+          }
+          enemy.destroy();
+        } else {
+          this.time.delayedCall(200, () => {
+            enemy.clearTint();
+            enemy.state = "chasing";
+          });
+        }
+      }
+    }
+
+    const config = {
+      type: Phaser.AUTO,
+      width: 1280,
+      height: 720,
+      backgroundColor: "#000",
+      pixelArt: true,
+      antialias: false,
+      roundPixels: true,
+      pipeline: { GrayscalePipeline: GrayscalePipeline },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+      physics: {
+        default: "arcade",
+        arcade: { debug: false, willReadFrequently: true },
+      },
+      scene: [CharacterSelectScene, CutsceneScene, GameScene],
+    };
+
+    const game = new Phaser.Game(config);
+  </script>
+</body>
+
+</html>

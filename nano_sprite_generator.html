@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Nano Banana Sprite Generator: Naga Soul</title>
+    <style>
+        body {
+            background: #111;
+            color: #eee;
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .prompt-block {
+            background: #222;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .prompt-text {
+            width: 100%;
+            height: 80px;
+            background: #000;
+            color: #0f0;
+            border: 1px solid #555;
+            padding: 5px;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #00cc00;
+        }
+
+        .result-container {
+            margin-top: 10px;
+            min-height: 100px;
+            border: 1px dashed #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #global-status {
+            font-size: 1.2em;
+            color: #0ff;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Nano Banana (Puter.js) - Naga Soul Sprite Generator</h1>
+    <p>System generation exceeded limits. Click generate below to use your free Nano Banana / puter.js access to create
+        the sprites!</p>
+    <div id="global-status">Ready. Authentication check...</div>
+    <div id="app"></div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        const baseDesc = "Same character as reference — a bald black man with a scarred face wearing a dark gas mask with glowing green eyes. He wields a glowing green energy sword (like a lightsaber). He is wearing full black futuristic plate armor and a long black trench coat. EA shield logo on chest. Streets of Rage 2 style 16-bit pixel art fighting game sprite, bold outlines, SEGA Genesis aesthetic.";
+
+        const tasks = [
+            {
+                id: "punch",
+                title: "Punch/Sword Combo",
+                prompt: `16-bit pixel art sprite sheet: 9-frame sword combo attack in a horizontal strip. ${baseDesc} The combo is: 3 frames of horizontal slash (wind up, sweeping horizontal cut with green energy trail, follow through), 3 frames of vertical strike (raise sword high, bring down in a devastating overhead chop, recover), 3 frames of rising spin slash (crouch, launch upward spinning with sword extended in a green energy arc). Character faces right. Bright green (#00FF00) solid background.`
+            },
+            {
+                id: "kick",
+                title: "Kick/Sword Thrust",
+                prompt: `16-bit pixel art sprite sheet: 5-frame forward sword thrust attack sequence in a horizontal strip. ${baseDesc} Frame 1: draws sword back chambering for thrust, Frame 2: lunges forward extending arm, Frame 3: full extension powerful sword thrust with bright green energy flare at the tip, Frame 4: retracting sword, Frame 5: back to fighting stance. Character faces right. Bright green (#00FF00) solid background.`
+            },
+            {
+                id: "jump",
+                title: "Jump",
+                prompt: `16-bit pixel art sprite sheet: 4-frame jump sequence in a horizontal strip. ${baseDesc} He holds his glowing green sword tightly. Frame 1: crouch anticipation, Frame 2: launch upward with knees tucked, Frame 3: apex of jump, Frame 4: falling down legs extended. Character faces right. Bright green (#00FF00) solid background.`
+            },
+            {
+                id: "hurt",
+                title: "Hurt",
+                prompt: `16-bit pixel art sprite sheet: 4-frame hurt and knockdown sequence in a horizontal strip. ${baseDesc} Green sword is deactivated or dropped. Frame 1: hit stagger recoiling backwards with pain expression, Frame 2: stumbling further back off balance, Frame 3: falling to the ground, Frame 4: lying flat on back knocked down. Character faces right. Bright green (#00FF00) solid background.`
+            },
+            {
+                id: "energy",
+                title: "Energy Blast",
+                prompt: `16-bit pixel art sprite sheet: 6-frame energy blast attack in a horizontal strip. ${baseDesc} Frame 1-2: holds green sword high, gathering vibrant green energy into the blade, Frame 3: swings sword down pointing forward releasing a green energy projectile, Frame 4-5: energy wave fires forward from the sword with bright green glow effects, Frame 6: recovery stance. Character faces right. Bright green (#00FF00) solid background.`
+            },
+            {
+                id: "dash",
+                title: "Dash Attack",
+                prompt: `16-bit pixel art sprite sheet: 4-frame dash attack in a horizontal strip. ${baseDesc} Frame 1: leans back holding glowing green sword low to the side, preparing to charge, Frame 2: lunges forward with sword pointing straight ahead, motion blur lines, Frame 3: full extension charging sword thrust impact with green energy burst, Frame 4: slide to a stop recovery. Character dashes to the right. Bright green (#00FF00) solid background. Speed lines.`
+            },
+            {
+                id: "power",
+                title: "Power Up",
+                prompt: `16-bit pixel art sprite sheet: 6-frame power-up transformation sequence in a horizontal strip. ${baseDesc} Frame 1: standing holding glowing green sword, Frame 2: crouching slightly as green energy swirls around feet and sword blade, Frame 3: rising up as green fire aura surrounds body and sword pulse with intense light, eyes of gas mask glowing green, Frame 4-5: full power-up with massive green flame/fire aura engulfing character and sword, electricity crackling, Frame 6: powered-up fighting stance with green flames burning deeply around body and blade. Character faces right. Bright green (#00FF00) solid background. Dramatic energy VFX.`
+            }
+        ];
+
+        async function init() {
+            try {
+                const isSignedIn = await puter.auth.isSignedIn();
+                if (!isSignedIn) {
+                    document.getElementById('global-status').innerHTML = 'Please click "Sign in with Puter" to use Nano Banana.';
+                    const btn = document.createElement('button');
+                    btn.innerText = "Sign in with Puter";
+                    btn.onclick = async () => { await puter.auth.signIn(); location.reload(); };
+                    document.getElementById('global-status').appendChild(btn);
+                    return;
+                }
+                document.getElementById('global-status').innerText = `Authenticated! Ready to generate using puter.ai...`;
+                renderUI();
+            } catch (err) {
+                document.getElementById('global-status').innerText = 'Error initializing Puter: ' + err;
+            }
+        }
+
+        function renderUI() {
+            const app = document.getElementById('app');
+            tasks.forEach(task => {
+                const block = document.createElement('div');
+                block.className = 'prompt-block';
+                block.innerHTML = `
+                    <h3>${task.title}</h3>
+                    <textarea class="prompt-text" id="prompt-${task.id}">${task.prompt}</textarea>
+                    <button onclick="generate('${task.id}')">Generate</button>
+                    <div id="status-${task.id}" style="margin-top: 10px; color: #888;"></div>
+                    <div class="result-container" id="res-${task.id}">Waiting...</div>
+                `;
+                app.appendChild(block);
+            });
+        }
+
+        async function generate(id) {
+            const prompt = document.getElementById(`prompt-${id}`).value;
+            const status = document.getElementById(`status-${id}`);
+            const container = document.getElementById(`res-${id}`);
+
+            status.innerText = "Generating... Please wait. (Using gemini-2.5-flash-image)";
+            container.innerHTML = "Generating...";
+
+            try {
+                // Using 1:1 aspect ratio to mimic the original generation scripts for strips
+                const result = await puter.ai.txt2img({
+                    prompt: prompt + ", 1:1 aspect ratio",
+                    model: "gemini-2.5-flash-image",
+                    count: 1
+                });
+                const imageUrl = result.images[0].url;
+                container.innerHTML = `<img src="${imageUrl}">`;
+                status.innerHTML = `<span style="color:#0f0;">Done! Right click image to save as naga_soul_${id}.png</span>`;
+            } catch (e) {
+                status.innerText = "Error: " + e;
+                container.innerHTML = "Error.";
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

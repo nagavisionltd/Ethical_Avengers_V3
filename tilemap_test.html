@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tilemap Render Test</title>
+    <script src="./phaser.min.js"></script>
+</head>
+
+<body style="background:#222">
+    <script>
+        class TestScene extends Phaser.Scene {
+            preload() {
+                this.load.tilemapTiledJSON('testmap', 'assets/tilemaps/mountain_new.json?' + Date.now());
+                this.load.image('mars_back', 'assets/images/tilesets/mars/mars_back.png');
+                this.load.image('mars_middle', 'assets/images/tilesets/mars/mars_middle.png');
+                this.load.image('mars_near', 'assets/images/tilesets/mars/mars_near.png');
+                this.load.image('mars_tileset', 'assets/images/tilesets/mars/mars_tileset.png');
+                this.load.image('mars_floor_001', 'assets/images/tilesets/mars/mars_floor_001.png');
+                this.load.image('mars_floor_002', 'assets/images/tilesets/mars/mars_floor_002.png');
+                this.load.image('mars_floor_003', 'assets/images/tilesets/mars/mars_floor_003.png');
+                this.load.image('mars_floor_004', 'assets/images/tilesets/mars/mars_floor_004.png');
+            }
+            create() {
+                const map = this.make.tilemap({ key: 'testmap' });
+                console.log('Map size:', map.width, 'x', map.height, 'tile:', map.tileWidth, 'x', map.tileHeight);
+                console.log('Tilesets in map:', map.tilesets.map(t => t.name).join(', '));
+                console.log('Layers in map:', map.layers.map(l => l.name).join(', '));
+
+                const allTiles = [];
+                map.tilesets.forEach(ts => {
+                    const t = map.addTilesetImage(ts.name, ts.name);
+                    if (t) {
+                        allTiles.push(t);
+                        console.log('OK tileset:', ts.name, 'firstgid:', ts.firstgid, 'total:', ts.total);
+                    } else {
+                        console.error('FAIL tileset:', ts.name);
+                    }
+                });
+
+                console.log('map.layers length:', map.layers.length);
+                map.layers.forEach((layerData, i) => {
+                    console.log('Processing layer:', i, layerData.name, 'type:', layerData.type);
+                    try {
+                        const layer = map.createLayer(layerData.name, allTiles, 0, 0);
+                        if (layer) {
+                            layer.setScale(2);
+                            layer.setDepth(i);
+                            let count = 0;
+                            layer.layer.data.forEach(row => row.forEach(tile => { if (tile.index > 0) count++; }));
+                            console.log('Layer OK:', layerData.name, 'tiles:', count, 'visible:', layer.visible);
+                        } else {
+                            console.error('createLayer returned NULL for:', layerData.name);
+                        }
+                    } catch (e) {
+                        console.error('createLayer EXCEPTION for:', layerData.name, e.message);
+                    }
+                });
+
+                this.cameras.main.setBackgroundColor('#112233');
+                console.log('TEST COMPLETE');
+            }
+        }
+
+        new Phaser.Game({
+            type: Phaser.AUTO, width: 960, height: 540, pixelArt: true,
+            scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+            scene: TestScene
+        });
+    </script>
+</body>
+
+</html>

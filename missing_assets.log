@@ -1,0 +1,42 @@
+assets/ui/world_map.png
+assets/ui/select_character_screen.png
+assets/ui/world_map.png
+assets/images/backgrounds/bg1.png
+assets/images/tiles/ground_tile_v1.png
+assets/images/Environments/sci-fi-environment-background-files/PNG/sky.png
+assets/images/backgrounds/celestial_bg.png
+new_tilesets/warped_city_files/ENVIRONMENT/background/skyline-a.png
+new_tilesets/warped_city_files/ENVIRONMENT/background/skyline-b.png
+new_tilesets/warped_city_files/ENVIRONMENT/background/buildings-bg.png
+new_tilesets/warped_city_files/ENVIRONMENT/background/near-buildings-bg.png
+new_tilesets/warped_city_files/ENVIRONMENT/props/antenna.png
+new_tilesets/warped_city_files/ENVIRONMENT/tileset.png
+new_tilesets/warped_city_files/ENVIRONMENT/props/control-box-1.png
+assets/images/Environments/sci-fi-interior-paltform/PNG/background.png
+assets/images/Environments/bulkhead-walls/PNG/bg-wall.png
+assets/images/Environments/bulkhead-walls/PNG/foreground.png
+assets/images/Environments/sci-fi-interior-paltform/PNG/tile-set-sci-fi-interior-platform.png
+assets/video/level1_boss_bg.mp4
+assets/video/vs_arena_bg.mp4
+assets/video/vs_arena_bg_alt.mp4
+assets/images/backgrounds/boss-fight-2.png
+assets/images/characters/big-z/
+assets/images/characters/dr-ignite/dr-ignite-simple-prototype.png
+assets/images/characters/curt-soul/
+assets/images/enemies/
+assets/images/enemies/enemy-cyborg.png
+assets/images/Explosion/spritesheet/explosion-animation.png
+assets/images/characters/dr-ignite/frames/blast_projectile_01.png
+assets/images/Objects/Barrel (1).png
+assets/images/Objects/Box.png
+new_tilesets/warped_city_files/SPRITES/vehicles/v-police.png
+new_tilesets/warped_city_files/SPRITES/vehicles/v-truck.png
+assets/sfx/snd_select.ogg
+assets/sfx/snd_jump.ogg
+assets/sfx/snd_hurt.ogg
+assets/music/Neon Shadows - LEVEL 1.mp3
+assets/music/Neon Shadows PART 2 LEVEL 2.mp3
+assets/music/Shadows in the Alley - CUT SCENES.mp3
+assets/music/music_drama_loop.wav
+assets/music/music_aetherion_loop.wav
+assets/music/music_khemra_loop.wav

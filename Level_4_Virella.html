@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ethical Avengers - Stage 4: Virella (The Verdant Deep)</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // --- SHADER: Monochrome/Noir for the 'Rot' (can be toggled) ---
+        const GrayScalePipeline = new Phaser.Class({
+            Extends: Phaser.Renderer.WebGL.Pipelines.PostFXPipeline,
+            initialize: function GrayScalePipeline(game) {
+                Phaser.Renderer.WebGL.Pipelines.PostFXPipeline.call(this, {
+                    game: game,
+                    renderTarget: true,
+                    fragShader: `
+                precision mediump float;
+                uniform sampler2D uMainSampler;
+                varying vec2 outTexCoord;
+                void main(void) {
+                    vec4 color = texture2D(uMainSampler, outTexCoord);
+                    float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                    gl_FragColor = vec4(vec3(gray), color.a);
+                }
+                `
+                });
+            }
+        });
+
+        class CharacterSelectScene extends Phaser.Scene {
+            constructor() { super("CharacterSelectScene"); }
+            preload() {
+                this.load.image('bg_select', 'lore/home_screen_bg.png');
+                this.load.image('btn_curt', 'assets/images/characters/CHIBI_SOUL/idle/idle_01.png');
+                this.load.image('btn_jack', 'assets/images/characters/DR_JACK/idle/idle_01.png');
+            }
+            create() {
+                this.add.image(640, 360, 'bg_select').setDisplaySize(1280, 720);
+                this.add.text(640, 100, "SELECT YOUR AVENGER", { fontSize: '48px', color: '#fff', fontStyle: 'bold' }).setOrigin(0.5);
+
+                const curt = this.add.image(400, 360, 'btn_curt').setInteractive().setScale(2);
+                this.add.text(400, 450, "CURT (NAGA SOUL)", { fontSize: '24px', color: '#fff' }).setOrigin(0.5);
+
+                const jack = this.add.image(880, 360, 'btn_jack').setInteractive().setScale(2);
+                this.add.text(880, 450, "DR. JACK", { fontSize: '24px', color: '#fff' }).setOrigin(0.5);
+
+                curt.on('pointerdown', () => this.scene.start('CutsceneScene', { charType: 'curt' }));
+                jack.on('pointerdown', () => this.scene.start('CutsceneScene', { charType: 'jack' }));
+            }
+        }
+
+        class CutsceneScene extends Phaser.Scene {
+            constructor() { super("CutsceneScene"); }
+            create(data) {
+                this.cameras.main.setBackgroundColor('#000');
+                const lines = [
+                    "Naga Soul: \"Big Zeeko, our reconnaissance indicates that The Blight Core is hidden deep within Virella.\"",
+                    "Big Zeeko: \"I've fought in worse conditions, Naga. But I agree, this place feels... off.\"",
+                    "Naga Soul: \"Stay sharp; the jungle and the sea are full of surprises.\"",
+                    "Big Zeeko: \"You got it. For the Ethical Avengers!\""
+                ];
+                let currentLine = 0;
+                const text = this.add.text(640, 360, lines[currentLine], {
+                    fontSize: '28px', color: '#0f0', align: 'center', wordWrap: { width: 1000 }
+                }).setOrigin(0.5);
+
+                this.input.keyboard.on('keydown-SPACE', () => {
+                    currentLine++;
+                    if (currentLine < lines.length) {
+                        text.setText(lines[currentLine]);
+                    } else {
+                        this.scene.start('GameScene', data);
+                    }
+                });
+            }
+        }
+
+        class GameScene extends Phaser.Scene {
+            constructor() { super("GameScene"); }
+
+            preload() {
+                // Tileset: Magic Cliffs
+                this.load.image('virella_tiles', 'new_tilesets/Magic-Cliffs-Gamekit/Assets/Environment/PNG/tileset.png');
+                this.load.image('virella_clouds', 'new_tilesets/Magic-Cliffs-Gamekit/Assets/Environment/PNG/clouds.png');
+                this.load.image('virella_sea', 'new_tilesets/Magic-Cliffs-Gamekit/Assets/Environment/PNG/sea.png');
+                this.load.image('virella_sky', 'new_tilesets/Magic-Cliffs-Gamekit/Assets/Environment/PNG/sky.png');
+
+                // Chibi Soul
+                for (let i = 1; i <= 4; i++) {
+                    this.load.image(`chibi_idle_${i}`, `assets/images/characters/CHIBI_SOUL/idle/idle_0${i}.png`);
+                    this.load.image(`chibi_walk_${i}`, `assets/images/characters/CHIBI_SOUL/forward/forward_0${i}.png`);
+                }
+                for (let i = 1; i <= 4; i++) {
+                    this.load.image(`chibi_jump_up_${i}`, `assets/images/characters/CHIBI_SOUL/jump/jump up/jump_up_0${i}.png`);
+                }
+
+                this.load.image('proj', 'assets/images/characters/CHIBI_SOUL/attack/energy_blast.png');
+            }
+
+            create(data) {
+                // --- SCALE & WORLD CONFIG ---
+                const SCALE = 3;
+                const MAP_WIDTH = 4000;
+                const LEVEL_HEIGHT = 720;
+
+                this.physics.world.setBounds(0, 0, MAP_WIDTH, LEVEL_HEIGHT);
+                this.cameras.main.setBounds(0, 0, MAP_WIDTH, LEVEL_HEIGHT);
+
+                // 1. Backgrounds
+                this.add.tileSprite(0, 0, MAP_WIDTH, LEVEL_HEIGHT, 'virella_sky').setOrigin(0).setScrollFactor(0.1).setScale(SCALE);
+                this.add.tileSprite(0, 300, MAP_WIDTH, 400, 'virella_clouds').setOrigin(0).setScrollFactor(0.3).setScale(SCALE);
+                this.add.tileSprite(0, 500, MAP_WIDTH, 200, 'virella_sea').setOrigin(0).setScrollFactor(0.5).setScale(SCALE);
+
+                // 2. Navigation Logic (2.5D Lanes)
+                this.baseLaneY = 600;
+
+                // 3. Player
+                this.player = this.physics.add.sprite(200, this.baseLaneY, 'chibi_idle_1');
+                this.player.setScale(2.5); // Unified scaling
+                this.player.setCollideWorldBounds(true);
+                this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+
+                // 4. Input
+                this.cursors = this.input.keyboard.createCursorKeys();
+
+                // 5. Animations
+                this.anims.create({
+                    key: 'idle',
+                    frames: [{ key: 'chibi_idle_1' }, { key: 'chibi_idle_2' }, { key: 'chibi_idle_3' }, { key: 'chibi_idle_4' }],
+                    frameRate: 8, repeat: -1
+                });
+                this.anims.create({
+                    key: 'walk',
+                    frames: [{ key: 'chibi_walk_1' }, { key: 'chibi_walk_2' }, { key: 'chibi_walk_3' }, { key: 'chibi_walk_4' }],
+                    frameRate: 10, repeat: -1
+                });
+
+                this.player.play('idle');
+
+                // --- ENEMIES & WAVES ---
+                this.enemies = this.physics.add.group();
+                this.currentWaveIdx = 0;
+                this.waves = [
+                    { x: 1200, count: 5, enemyType: "Jungle Scout" },
+                    { x: 2000, count: 3, enemyType: "Sea Crawler" },
+                    { x: 2800, count: 4, enemyType: "Toxic Spitter" }
+                ];
+
+                // Shader setup
+                this.isRotting = false;
+
+                // Goal Portal (Boss)
+                const portal = this.physics.add.sprite(MAP_WIDTH - 100, this.baseLaneY, 'proj').setScale(2).setTint(0xff0000);
+                portal.body.setAllowGravity(false);
+                this.physics.add.overlap(this.player, portal, () => {
+                    this.cameras.main.fadeOut(500);
+                    this.time.delayedCall(500, () => this.scene.start('BossScene'));
+                });
+
+                this.add.text(20, 20, "STAGE 4: VIRELLA", {
+                    fontSize: '24px', color: '#fff', fontStyle: 'bold', stroke: '#000', strokeThickness: 4
+                }).setScrollFactor(0);
+            }
+
+            spawnEnemy(x, type) {
+                // Placeholder enemy using 'chibi_idle_1' but tinted green/gray
+                const enemy = this.physics.add.sprite(x + Phaser.Math.Between(-100, 100), this.baseLaneY, 'chibi_idle_1');
+                enemy.setScale(2.5);
+                enemy.setFlipX(true);
+                enemy.setTint(type === "Jungle Scout" ? 0x00ff00 : 0x888888);
+                this.enemies.add(enemy);
+            }
+
+            checkWaves() {
+                if (this.currentWaveIdx < this.waves.length) {
+                    const wave = this.waves[this.currentWaveIdx];
+                    if (this.player.x > wave.x - 600) {
+                        for (let i = 0; i < wave.count; i++) {
+                            this.spawnEnemy(wave.x + (i * 50), wave.enemyType);
+                        }
+                        this.currentWaveIdx++;
+                    }
+                }
+            }
+
+            update(time, delta) {
+                const speed = 300;
+                const depthSpeed = 150;
+
+                // Rot Transition Logic (Gothic Horror influence)
+                if (this.player.x > 2500 && !this.isRotting) {
+                    this.isRotting = true;
+                    this.cameras.main.setPostPipeline(GrayScalePipeline);
+                    this.add.text(this.player.x - 200, 200, "THE ROT SETS IN...", {
+                        fontSize: '48px', color: '#fff', fontStyle: 'bold'
+                    }).setDepth(1000).setAlpha(0).setScrollFactor(1).setAlpha(1);
+                }
+
+                this.checkWaves();
+                if (this.cursors.left.isDown) {
+                    this.player.setVelocityX(-speed);
+                    this.player.flipX = true;
+                    this.player.play('walk', true);
+                } else if (this.cursors.right.isDown) {
+                    this.player.setVelocityX(speed);
+                    this.player.flipX = false;
+                    this.player.play('walk', true);
+                } else {
+                    this.player.setVelocityX(0);
+                    this.player.play('idle', true);
+                }
+
+                // 2.5D Movement within the lane
+                if (this.cursors.up.isDown && this.player.y > 500) {
+                    this.player.setVelocityY(-depthSpeed);
+                } else if (this.cursors.down.isDown && this.player.y < 700) {
+                    this.player.setVelocityY(depthSpeed);
+                } else {
+                    this.player.setVelocityY(0);
+                }
+
+                // Dynamic depth sorting
+                this.player.setDepth(this.player.y);
+            }
+        }
+
+        class BossScene extends Phaser.Scene {
+            constructor() { super("BossScene"); }
+
+            preload() {
+                this.load.image('boss_core', 'assets/images/characters/CHIBI_SOUL/attack/energy_blast.png'); // Placeholder
+                this.load.image('node', 'assets/images/characters/CHIBI_SOUL/attack/energy_blast.png'); // Placeholder
+            }
+
+            create(data) {
+                this.cameras.main.setBackgroundColor('#222');
+                this.cameras.main.setPostPipeline(GrayScalePipeline);
+
+                this.add.text(640, 50, "THE BLIGHT CORE", { fontSize: '32px', color: '#f00', fontStyle: 'bold' }).setOrigin(0.5);
+
+                // Boss Core
+                this.boss = this.physics.add.sprite(640, 300, 'boss_core').setScale(5).setTint(0x555555);
+                this.boss.hp = 100;
+                this.boss.isVulnerable = false;
+
+                // Healing Nodes Group
+                this.nodes = this.physics.add.staticGroup();
+                this.spawnNodes();
+
+                // Player (Simplified for boss room)
+                this.player = this.physics.add.sprite(200, 500, 'chibi_idle_1').setScale(2.5);
+                this.player.setCollideWorldBounds(true);
+                this.cursors = this.input.keyboard.createCursorKeys();
+
+                this.physics.add.overlap(this.player, this.nodes, (p, n) => {
+                    n.destroy();
+                    if (this.nodes.countActive() === 0) {
+                        this.makeVulnerable();
+                    }
+                });
+
+                this.input.keyboard.on('keydown-X', () => {
+                    if (this.boss.isVulnerable && Phaser.Math.Distance.Between(this.player.x, this.player.y, this.boss.x, this.boss.y) < 200) {
+                        this.boss.hp -= 20;
+                        this.boss.setTint(0xff0000);
+                        this.time.delayedCall(100, () => this.boss.setTint(0xffffff));
+                        if (this.boss.hp <= 0) this.win();
+                    }
+                });
+
+                this.add.text(640, 650, "DESTROY THE NODES TO WEAKEN THE CORE! [SPACE/X to Attack]", { fontSize: '20px', color: '#fff' }).setOrigin(0.5);
+            }
+
+            spawnNodes() {
+                for (let i = 0; i < 4; i++) {
+                    const x = 300 + (i * 200);
+                    const y = 200 + (i % 2 * 200);
+                    const node = this.nodes.create(x, y, 'node').setScale(2).setTint(0x00ff00);
+                    this.tweens.add({ targets: node, scale: 2.5, duration: 1000, yoyo: true, repeat: -1 });
+                }
+            }
+
+            makeVulnerable() {
+                this.boss.isVulnerable = true;
+                this.boss.setTint(0xffffff);
+                this.add.text(640, 450, "CORE VULNERABLE!", { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
+            }
+
+            win() {
+                this.add.text(640, 360, "BLIGHT DEFEATED!", { fontSize: '64px', color: '#0f0' }).setOrigin(0.5);
+                this.time.delayedCall(2000, () => this.scene.start('CharacterSelectScene'));
+            }
+
+            update() {
+                const speed = 400;
+                if (this.cursors.left.isDown) this.player.setVelocityX(-speed);
+                else if (this.cursors.right.isDown) this.player.setVelocityX(speed);
+                else this.player.setVelocityX(0);
+
+                if (this.cursors.up.isDown) this.player.setVelocityY(-speed);
+                else if (this.cursors.down.isDown) this.player.setVelocityY(speed);
+                else this.player.setVelocityY(0);
+            }
+        }
+
+        const config = {
+            type: Phaser.AUTO,
+            width: 1280,
+            height: 720,
+            backgroundColor: '#000000',
+            parent: 'game-container',
+            physics: {
+                default: 'arcade',
+                arcade: { debug: false, willReadFrequently: true }
+            },
+            scene: [CharacterSelectScene, CutsceneScene, GameScene, BossScene]
+        };
+
+        new Phaser.Game(config);
+    </script>
+</body>
+
+</html>

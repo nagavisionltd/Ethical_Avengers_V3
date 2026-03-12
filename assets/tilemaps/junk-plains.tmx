@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="6">
+ <tileset firstgid="1" name="back" tilewidth="32" tileheight="32" tilecount="28" columns="4">
+  <image source="assets/images/tilesets/junk/junk_back.png" width="144" height="240"/>
+ </tileset>
+ <tileset firstgid="29" name="middle" tilewidth="32" tileheight="32" tilecount="70" columns="10">
+  <image source="assets/images/tilesets/junk/junk_middle.png" width="336" height="240"/>
+ </tileset>
+ <tileset firstgid="99" name="near" tilewidth="32" tileheight="32" tilecount="112" columns="16">
+  <image source="assets/images/tilesets/junk/junk_near.png" width="512" height="240"/>
+ </tileset>
+ <tileset firstgid="211" name="tileset" tilewidth="32" tileheight="32" tilecount="15" columns="5">
+  <image source="assets/images/tilesets/junk/junk_tileset.png" width="160" height="96"/>
+  <tile id="0">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="31.7557" y="3.14986">
+     <polygon points="0,0 -6.68542,-1.54279 -15.3636,-0.771394 -31.6914,4.30695 -31.6914,9.57814 -23.1418,20.7634 -20.1848,25.1346 -19.8634,26.4845 -18.9634,28.6059 0.321414,28.863"/>
+    </object>
+   </objectgroup>
+  </tile>
+  <tile id="1">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0.152609" width="15.7187" height="31.59"/>
+   </objectgroup>
+  </tile>
+  <tile id="2">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0.457827" y="0" width="30.9796" height="31.7426"/>
+   </objectgroup>
+  </tile>
+  <tile id="3">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="15.7187" y="0.305218" width="16.4818" height="31.1322"/>
+   </objectgroup>
+  </tile>
+  <tile id="4">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="-0.152609" y="-0.457827" width="32.5057" height="32.3531"/>
+   </objectgroup>
+  </tile>
+  <tile id="5">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="12.2087" y="0.305218" width="19.6865" height="30.827"/>
+   </objectgroup>
+  </tile>
+  <tile id="9">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0.152609" y="0" width="19.9918" height="32.6583"/>
+   </objectgroup>
+  </tile>
+  <tile id="10">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="16.1765" y="15.7187" width="16.6344" height="16.0239"/>
+   </objectgroup>
+  </tile>
+  <tile id="14">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="16.1765" width="16.1765" height="16.0239"/>
+   </objectgroup>
+  </tile>
+ </tileset>
+ <tileset firstgid="226" name="cyberpunk-corridor-strip" tilewidth="32" tileheight="32" tilecount="200" columns="40">
+  <image source="assets/images/tilesets/cyberpunk/cyberpunk_strip.png" width="1296" height="176"/>
+ </tileset>
+ <tileset firstgid="426" name="back-2" tilewidth="32" tileheight="32" tilecount="9" columns="3">
+  <image source="assets/images/tilesets/warped/warped_back2.png" width="96" height="112"/>
+ </tileset>
+ <tileset firstgid="435" name="back" tilewidth="32" tileheight="32" tilecount="3" columns="1">
+  <image source="assets/images/tilesets/warped/warped_back_alt.png" width="48" height="112"/>
+ </tileset>
+ <tileset firstgid="438" name="tileset" tilewidth="32" tileheight="32" tilecount="3" columns="1">
+  <image source="assets/images/tilesets/warped/warped_tileset_alt.png" width="48" height="112"/>
+ </tileset>
+ <layer id="5" name="Tile Layer 1" width="30" height="9">
+  <data encoding="csv">
+1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,
+5,6,7,8,5,6,7,8,5,6,7,8,5,6,7,8,5,6,7,8,5,6,7,8,5,6,7,8,5,6,
+9,10,11,12,9,10,11,12,9,10,11,12,9,10,11,12,9,10,11,12,9,10,11,12,9,10,11,12,9,10,
+13,14,15,16,13,14,15,16,13,14,15,16,13,14,15,16,13,14,15,16,13,14,15,16,13,14,15,16,13,14,
+17,18,19,20,17,18,19,20,17,18,19,20,17,18,19,20,17,18,19,20,17,18,19,20,17,18,19,20,17,18,
+21,22,23,24,21,22,23,24,21,22,23,24,21,22,23,24,21,22,23,24,21,22,23,24,21,22,23,24,21,22,
+25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,
+0,17,18,19,20,0,0,0,0,0,0,17,18,19,20,0,0,0,0,0,0,0,17,18,19,20,0,0,0,0,
+0,21,22,23,24,0,0,0,0,0,0,21,22,23,24,0,0,0,0,0,0,0,21,22,23,24,0,0,0,0
+</data>
+ </layer>
+ <layer id="7" name="Tile Layer 3" width="30" height="9">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,
+29,30,31,32,33,34,35,36,37,38,33,34,35,36,37,38,29,30,31,32,5,6,7,8,33,34,35,36,37,38,
+29,30,31,32,33,34,35,36,37,38,29,30,31,32,33,34,35,36,37,38,9,10,11,12,33,34,35,36,37,38,
+39,40,41,42,43,44,45,46,47,48,39,40,41,42,43,44,45,46,47,48,13,14,15,16,43,44,45,46,47,48,
+49,50,51,52,53,54,55,56,57,58,49,50,51,52,53,54,55,56,57,58,49,50,51,52,53,54,55,56,57,58,
+59,60,61,62,63,64,65,66,67,68,59,60,61,62,63,64,65,66,67,68,59,60,61,62,63,64,65,66,67,68,
+69,70,71,72,73,74,75,76,77,78,69,70,71,72,73,74,75,76,77,78,69,70,71,72,73,74,75,76,77,78,
+79,80,81,82,83,84,85,86,87,88,79,80,81,82,83,84,85,86,87,88,79,80,81,82,83,84,85,86,87,88,
+89,90,91,92,93,94,95,96,97,98,89,90,91,92,93,94,95,96,97,98,89,90,91,92,93,94,95,96,97,98
+</data>
+ </layer>
+ <layer id="6" name="Tile Layer 2" width="30" height="9">
+  <data encoding="csv">
+0,0,0,0,1,2,3,4,1,2,3,4,0,0,0,0,0,0,0,0,1,2,3,4,0,0,0,0,0,0,
+0,0,99,100,5,6,7,8,5,6,7,8,109,110,111,112,99,100,101,102,5,6,7,8,107,108,109,110,111,112,
+0,0,99,100,101,102,103,104,105,106,107,108,109,110,111,112,99,100,101,102,103,104,105,106,107,108,109,110,111,112,
+0,0,115,116,117,118,119,120,121,122,123,124,125,126,127,128,115,116,117,118,119,120,121,122,123,124,125,126,127,128,
+0,0,131,132,133,134,135,136,137,138,139,140,141,142,143,144,131,132,133,134,135,136,137,138,139,140,141,142,143,144,
+0,0,147,148,149,150,151,152,153,154,155,156,157,158,159,160,147,148,149,150,151,152,153,154,155,156,157,158,159,160,
+0,0,163,164,165,166,167,168,169,170,171,172,173,174,175,176,163,164,165,166,167,168,169,170,171,172,173,174,175,176,
+0,0,179,180,181,182,183,184,185,186,187,188,189,190,191,192,179,180,181,182,183,184,185,186,187,188,189,190,191,192,
+0,0,195,196,197,198,199,200,201,202,203,204,205,206,207,208,195,196,197,198,199,200,201,202,203,204,205,206,207,208
+</data>
+ </layer>
+ <layer id="8" name="Tile Layer 4" width="30" height="9">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,211,213,215,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,216,218,220,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,216,218,220,0,
+0,0,0,0,0,0,211,213,213,215,0,0,0,0,0,0,211,213,215,0,0,0,0,0,0,0,216,218,220,0,
+211,213,213,215,0,0,216,218,218,220,0,0,0,0,0,0,216,218,220,0,0,0,0,0,0,0,216,218,220,0
+</data>
+ </layer>
+ <objectgroup id="9" name="Object Layer 1">
+  <object id="1" x="516" y="224" width="94" height="26"/>
+  <object id="2" x="832" y="131" width="101" height="24"/>
+  <object id="3" x="190" y="225" width="133" height="27"/>
+  <object id="4" x="-1" y="248" width="131" height="26"/>
+  <object id="5" x="587" y="430"/>
+ </objectgroup>
+</map>

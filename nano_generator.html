@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana Sprite Generator</title>
+    <!-- Load Puter.js for Nano Banana -->
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #111;
+            color: #fff;
+            padding: 40px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #0f0;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #333;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 10px;
+            background: #1a1a1a;
+            color: #0fa;
+            border: 1px solid #444;
+            padding: 10px;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        button {
+            background: #0f0;
+            color: #000;
+            padding: 12px 24px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            box-shadow: 0 4px 0 #080;
+            margin-bottom: 20px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #080;
+        }
+
+        button:hover {
+            background: #3f3;
+        }
+
+        .preview {
+            background: #00FF00;
+            padding: 20px;
+            min-height: 120px;
+            border: 2px dashed #0f0;
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .preview img {
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 15px;
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            border: 2px solid #000;
+        }
+
+        .download-btn:hover {
+            background: #eee;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>🍌 Nano Banana Generator (Leon G)</h1>
+        <p>Using your unlimited Puter.js quota to finish Leon's sprite sheets!</p>
+
+        <div class="section">
+            <h3>1. Power-Up Animation (Gold Aura)</h3>
+            <textarea
+                id="prompt1">16-bit pixel art sprite sheet: 6-frame power-up transformation sequence. Same character as reference — large muscular Black man in gold/yellow futuristic armor, black durag, gold gauntlets, EA shield on chest. Streets of Rage 2 style. Frame 1: standing with fists clenched at sides, Frame 2: crouching slightly as golden energy swirls around feet, Frame 3: rising up as golden fire aura surrounds body, eyes glowing, Frame 4-5: full power-up with massive golden flame aura engulfing character, glowing eyes, electricity crackling, Frame 6: powered-up fighting stance with golden flames still burning around body. Character faces right. Bright green (#00FF00) solid background. Clean pixel art, bold outlines, dramatic energy VFX, 16-bit SEGA Genesis aesthetic.</textarea>
+            <button onclick="generateSprite(1)">Generate Power-Up Sheet</button>
+            <div id="output1" class="preview">Image will appear here...</div>
+        </div>
+
+        <div class="section" style="border-bottom: none;">
+            <h3>2. Hurt / Knockdown</h3>
+            <textarea
+                id="prompt2">16-bit pixel art sprite sheet: 4-frame hurt and knockdown sequence. Same character as reference — large muscular Black man in gold/yellow futuristic armor, black durag, gold gauntlets, EA shield on chest. Streets of Rage 2 style. Frame 1: hit stagger recoiling backwards with pain expression, Frame 2: stumbling further back off balance, Frame 3: falling to the ground, Frame 4: lying flat on back knocked down. Character faces right. Bright green (#00FF00) solid background. Clean pixel art, bold outlines, 16-bit SEGA Genesis aesthetic.</textarea>
+            <button onclick="generateSprite(2)">Generate Hurt Sheet</button>
+            <div id="output2" class="preview">Image will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        async function generateSprite(id) {
+            const promptText = document.getElementById('prompt' + id).value;
+            const outputDiv = document.getElementById('output' + id);
+
+            outputDiv.innerHTML = "Generating... Please wait. (You may be prompted to sign into Puter)";
+            outputDiv.style.color = "#000";
+
+            try {
+                // Nano Banana / Puter.js txt2img call
+                const imgElement = await puter.ai.txt2img(promptText);
+
+                outputDiv.innerHTML = "";
+                outputDiv.appendChild(imgElement);
+
+                // Create nice download button
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imgElement.src;
+                downloadLink.download = id === 1 ? 'leon_g_powerup.png' : 'leon_g_hurt.png';
+                downloadLink.className = "download-btn";
+                downloadLink.innerText = "⬇️ Download Sheet";
+                outputDiv.appendChild(document.createElement('br'));
+                outputDiv.appendChild(downloadLink);
+
+            } catch (error) {
+                outputDiv.innerHTML = `⚠️ Error: ${error.message}`;
+                outputDiv.style.color = "red";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
