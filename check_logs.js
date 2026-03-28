@@ -5,19 +5,25 @@ const { chromium } = require('playwright');
     const page = await browser.newPage();
     
     page.on('console', msg => {
-        if (msg.type() === 'error' || msg.type() === 'warning' || msg.text().includes('Missing') || msg.text().includes('Asset')) {
-            console.log(`[BROWSER ${msg.type().toUpperCase()}] ${msg.text()}`);
-        }
+        console.log(`[BROWSER ${msg.type().toUpperCase()}] ${msg.text()}`);
     });
 
-    page.on('pageerror', err => {
-        console.log(`[PAGE ERROR] ${err.message}`);
-    });
-
-    console.log("Navigating to http://127.0.0.1:8000/index.html...");
-    await page.goto('http://127.0.0.1:8000/index.html', { waitUntil: 'networkidle' });
+    console.log("Navigating to http://127.0.0.1:8008/index.html...");
+    await page.goto('http://127.0.0.1:8008/index.html', { waitUntil: 'networkidle' });
     
     // give it a moment to boot
+    await page.waitForTimeout(1000);
+    
+    // Jump straight to the generic tilemap scene for debugging
+    await page.evaluate(() => {
+        // Find any scene that is running
+        const scenes = window.game.scene.scenes;
+        if (scenes.length > 0) {
+            scenes[0].scene.start('GenericTilemapScene', { arcadeStageIndex: 1 });
+        }
+    });
+    
+    // Wait for the scene to load and print debugs
     await page.waitForTimeout(3000);
     
     await browser.close();

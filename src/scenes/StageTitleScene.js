@@ -38,8 +38,18 @@ class StageTitleScene extends Phaser.Scene {
             
             // Allow skipping
             const skipText = this.add.text(this.cameras.main.width - 20, this.cameras.main.height - 20, 'PRESS ANY KEY TO SKIP', {
-                fontFamily: '"Press Start 2P"', fontSize: '10px', color: '#ffffff'
-            }).setOrigin(1);
+                fontFamily: 'Orbitron, sans-serif',
+                fontSize: '18px',
+                fill: '#ffffff'
+            }).setOrigin(1, 1).setAlpha(0);
+
+            this.tweens.add({
+                targets: skipText,
+                alpha: 0.7,
+                duration: 1000,
+                delay: 1000,
+                ease: 'Power2'
+            });
             
             this.input.keyboard.on('keydown', () => {
                 vid.stop();

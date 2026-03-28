@@ -31,7 +31,7 @@ class UIScene extends Phaser.Scene {
         // --- PLAYER INFO (Top Left) ---
         const bg = this.add.rectangle(20, 20, 54, 54, 0x000000).setOrigin(0).setStrokeStyle(2, 0x333333);
         this.playerThumb = this.add.image(47, 47, 'chibi_soul_thumb').setOrigin(0.5).setScale(0.8);
-        this.playerName = this.add.text(84, 18, 'PLAYER', { fontFamily: '"Press Start 2P"', fontSize: '10px', fill: '#00ffaa' });
+        this.playerName = this.add.text(84, 18, 'LORD SOUL', { fontFamily: '"Press Start 2P"', fontSize: '10px', fill: '#00ffaa' });
 
         // --- LIVES COUNTER ---
         this.livesGroup = this.add.container(84, 2);
@@ -40,23 +40,39 @@ class UIScene extends Phaser.Scene {
         this.add.rectangle(84, 34, 254, 20, 0x000000, 0.5).setOrigin(0);
         this.playerHPBar = this.add.rectangle(86, 36, 250, 16, 0x00ffaa).setOrigin(0);
 
+        // --- RPG INFO (Below HP) ---
+        this.lvlText = this.add.text(84, 58, 'LVL 1', { fontFamily: '"Press Start 2P"', fontSize: '10px', fill: '#ffff00' });
+        this.add.rectangle(84, 70, 154, 10, 0x000000, 0.5).setOrigin(0);
+        this.xpBar = this.add.rectangle(85, 71, 0, 8, 0x00ffff).setOrigin(0);
+        this.creditsText = this.add.text(200, 58, 'EC: 0', { fontFamily: '"Press Start 2P"', fontSize: '10px', fill: '#ffd700' });
+
         // --- CENTER HUD ---
         const centerX = this.scale.width / 2;
         this.timeText = this.add.text(centerX - 120, 30, 'TIME: 00:00', { fontFamily: '"Press Start 2P"', fontSize: '14px', fill: '#ffffff' }).setOrigin(0.5);
         this.scoreText = this.add.text(centerX + 120, 30, 'SCORE: 000000', { fontFamily: '"Press Start 2P"', fontSize: '14px', fill: '#ffff00' }).setOrigin(0.5);
+        this.orbsText = this.add.text(centerX, 50, 'SOULS: 0', { fontFamily: '"Press Start 2P"', fontSize: '14px', fill: '#00ffff' }).setOrigin(0.5);
         this.comboText = this.add.text(centerX, 80, '', { fontFamily: '"Press Start 2P"', fontSize: '20px', fill: '#00ffaa', stroke: '#000000', strokeThickness: 4 }).setOrigin(0.5);
 
         // --- BOSS INFO ---
         this.bossContainer = this.add.container(640, 20).setAlpha(0);
         this.bossContainer.add(this.add.rectangle(0, 0, 304, 24, 0x000000, 0.5).setOrigin(0));
         this.bossHPBar = this.add.rectangle(2, 2, 300, 20, 0xff0044).setOrigin(0);
-        this.bossLabel = this.add.text(0, 28, 'BOSS', { fontFamily: '"Press Start 2P"', fontSize: '10px', fill: '#ff0044' });
-        this.bossContainer.add(this.bossLabel);
+        this.bossLabel = this.add.text(0, -15, 'BOSS', { fontFamily: '"Press Start 2P"', fontSize: '10px', fill: '#ff0044' }); // Moved up to avoid overlap
+        this.bossContainer.add([this.bossHPBar, this.bossLabel]);
 
         this.score = 0;
+        this.updateSoulOrbs();
         if (data && data.char) this.setPlayerInfo(data.char);
 
-        this.mainGroup.add([bg, this.playerThumb, this.playerName, this.playerHPBar, this.timeText, this.scoreText, this.comboText, this.bossContainer]);
+        this.mainGroup.add([bg, this.playerThumb, this.playerName, this.playerHPBar, this.timeText, this.scoreText, this.orbsText, this.comboText, this.bossContainer]);
+    }
+
+    updateSoulOrbs() {
+        if (this.orbsText) {
+            const orbs = this.registry.get('soulOrbs') || 0;
+            this.orbsText.setText(`SOULS: ${orbs}`);
+            this.tweens.add({ targets: this.orbsText, scale: 1.2, duration: 100, yoyo: true });
+        }
     }
 
     createVSUI(data) {
@@ -127,13 +143,13 @@ class UIScene extends Phaser.Scene {
 
     setPlayerInfo(key) {
         const map = {
-            'default': { name: 'CHIBI SOUL', thumb: 'chibi_soul_thumb', frame: null },
+            'default': { name: 'LORD SOUL', thumb: 'hud_portrait_naga', frame: null },
             'cherry': { name: 'VERONA ROSE', thumb: 'hud_portrait_verona', frame: null },
             'adam': { name: 'LEON G', thumb: 'hud_portrait_leon', frame: null },
             'bigz': { name: 'BIG ZEEKO', thumb: 'hud_portrait_zeeko', frame: null },
             'ignite': { name: 'DR. JACK', thumb: 'hud_portrait_jack', frame: null },
-            'ninja': { name: 'NAGA SOUL', thumb: 'hud_portrait_naga', frame: null },
-            'cro': { name: 'CRO', thumb: 'hud_portrait_sophia', frame: null } // Using Sophia for Cro if requested, or placeholders
+            'ninja': { name: 'NEELO-X', thumb: 'cn_idle_4', frame: null },
+            'lordsoul': { name: 'LORD SOUL', thumb: 'hud_portrait_naga', frame: null } 
         };
 
         const info = map[key] || map['default'];
@@ -176,6 +192,25 @@ class UIScene extends Phaser.Scene {
             const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
             const seconds = (totalSeconds % 60).toString().padStart(2, '0');
             if (this.timeText) this.timeText.setText(`TIME: ${minutes}:${seconds}`);
+
+            // RPG UI Updates
+            if (this.lvlText) {
+                const lvl = this.registry.get('level') || 1;
+                const xp = this.registry.get('xp') || 0;
+                const credits = this.registry.get('ethicsCredits') || 0;
+                const xpToNext = lvl * 100;
+                
+                // Track last level to show "Level Up" message
+                if (!this.lastLvl) this.lastLvl = lvl;
+                if (lvl > this.lastLvl) {
+                    this.showLevelUp(lvl);
+                    this.lastLvl = lvl;
+                }
+
+                this.lvlText.setText(`LVL ${lvl}`);
+                this.xpBar.width = Math.min(152, (xp / xpToNext) * 152);
+                this.creditsText.setText(`EC: ${credits}`);
+            }
         }
     }
 
@@ -237,6 +272,23 @@ class UIScene extends Phaser.Scene {
             alpha: 0,
             duration: 1500,
             onComplete: () => txt.destroy()
+        });
+    }
+
+    showLevelUp(lvl) {
+        const centerX = this.scale.width / 2;
+        const msg = this.add.text(centerX, 150, `LEVEL ${lvl} UNLOCKED!`, {
+            fontFamily: '"Press Start 2P"', fontSize: '24px', fill: '#ffff00', stroke: '#000', strokeThickness: 6
+        }).setOrigin(0.5);
+
+        this.tweens.add({
+            targets: msg,
+            scale: 1.5,
+            alpha: 0,
+            y: 100,
+            duration: 2000,
+            ease: 'Power2',
+            onComplete: () => msg.destroy()
         });
     }
 }

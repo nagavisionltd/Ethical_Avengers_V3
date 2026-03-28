@@ -13,141 +13,194 @@ class IntroScene extends Phaser.Scene {
     }
 
     create(data) {
-        this.selectionData = data; // Store data from world select
+        this.selectionData = data;
+        const isArcade = data && data.gameMode === 'arcade';
 
         this.sound.stopAll();
-        this.sound.play('music_drama', { loop: true, volume: 0.6 });
-
-        const cx = this.cameras.main.width / 2;
-        const cy = this.cameras.main.height / 2;
-
-        const boxWidth = 600;
-        const boxX = cx - (boxWidth / 2);
-
-        // --- TOP HALF: VISUALS ---
-        // Cinematic black backdrop
-        this.cameras.main.setBackgroundColor('#050510');
-
-        // Apply a mask to the visual top so its width exactly matches the 600px box width below it
-        const videoMaskShape = this.add.graphics();
-        videoMaskShape.fillStyle(0xffffff);
-        // Box is centered, leaving some empty space on the sides
-        videoMaskShape.fillRect(boxX, 0, boxWidth, 270); // Crop horizontally to boxWidth, vertically to mid-screen
-        videoMaskShape.setVisible(false); // <--- FIX: Hide the mask shape so it doesn't render as a solid white box!
-
-        const videoMask = videoMaskShape.createGeometryMask();
-
-        // Intro Image Sequence
-        this.introImages = [];
-        for (let i = 1; i <= 4; i++) {
-            const img = this.add.image(cx, 135, 'intro_img_' + i);
-            // The generated images are usually 1024x1024. Display at 600x600 so they fit the box width and pan vertically
-            img.setDisplaySize(600, 600);
-            img.setAlpha(i === 1 ? 1 : 0);
-            img.setMask(videoMask);
-            this.introImages.push(img);
-
-            // Give each image a slow, cinematic pan effect 
-            this.tweens.add({
-                targets: img,
-                y: 165,
-                duration: 20000,
-                ease: 'Sine.easeInOut',
-                yoyo: true,
-                repeat: -1
+        if (isArcade) {
+            // Arcade Mode: Cinematic Video Intro
+            this.sound.play('intro_music', { volume: 0.8 }); // Use intro music for cinematic feel
+            
+            this.video = this.add.video(480, 270, 'arcade_intro_video');
+            this.video.play();
+            
+            // Scale to fit
+            this.video.once('play', () => {
+                const width = this.video.videoData ? this.video.videoData.videoWidth : this.video.width;
+                const height = this.video.videoData ? this.video.videoData.videoHeight : this.video.height;
+                if (width > 0 && height > 0) {
+                    const scale = Math.min(this.scale.width / width, this.scale.height / height);
+                    this.video.setScale(scale);
+                }
             });
+
+            this.video.on('complete', () => this.nextScene());
+
+            // 2-Line White Text Overlay
+            const textStyle = {
+                fontFamily: '"Press Start 2P"',
+                fontSize: '14px',
+                color: '#ffffff',
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: 4,
+                shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 2, fill: true }
+            };
+
+            // this.introText1 = this.add.text(480, 440, "SOPHIA HAS BEEN SHATTERED. HER SOUL DISTILLED INTO P.O.G. SHARDS.", textStyle).setOrigin(0.5).setAlpha(0).setDepth(10);
+            // this.introText2 = this.add.text(480, 470, "THE ETHICAL AVENGERS HAVE AWAKENED TO RESTORE THE COSMIC BALANCE.", textStyle).setOrigin(0.5).setAlpha(0).setDepth(10);
+
+            // Fade in text sequentially (Disabled as requested)
+            /*
+            this.time.delayedCall(2000, () => {
+                this.tweens.add({ targets: this.introText1, alpha: 1, duration: 1000 });
+            });
+            this.time.delayedCall(5000, () => {
+                this.tweens.add({ targets: this.introText2, alpha: 1, duration: 1000 });
+            });
+            */
+
+        } else {
+            // Story Mode: Scrolling Lore Text & Image Sequence
+            this.sound.play('cutscene_bgm', { loop: true, volume: 0.6 });
+
+            const cx = this.cameras.main.width / 2;
+            const cy = this.cameras.main.height / 2;
+            const boxWidth = 600;
+            const boxX = cx - (boxWidth / 2);
+
+            this.cameras.main.setBackgroundColor('#050510');
+
+            const videoMaskShape = this.add.graphics();
+            videoMaskShape.fillStyle(0xffffff);
+            videoMaskShape.fillRect(boxX, 0, boxWidth, 270);
+            videoMaskShape.setVisible(false);
+
+            const videoMask = videoMaskShape.createGeometryMask();
+
+            this.introImages = [];
+            for (let i = 1; i <= 4; i++) {
+                const img = this.add.image(cx, 135, 'intro_img_' + i);
+                img.setDisplaySize(600, 600);
+                img.setAlpha(i === 1 ? 1 : 0);
+                img.setMask(videoMask);
+                this.introImages.push(img);
+
+                this.tweens.add({
+                    targets: img, y: 165, duration: 20000, ease: 'Sine.easeInOut', yoyo: true, repeat: -1
+                });
+            }
+
+            this.currentIntroImageIndex = 0;
+            this.time.delayedCall(8500, () => this.fadeToNextImage());
+            this.time.delayedCall(17000, () => this.fadeToNextImage());
+            this.time.delayedCall(25500, () => this.fadeToNextImage());
+
+            const separator = this.add.graphics();
+            separator.lineStyle(2, 0x00ffaa, 0.8);
+            separator.beginPath();
+            separator.moveTo(boxX, 270);
+            separator.lineTo(boxX + boxWidth, 270);
+            separator.strokePath();
+
+            const textBg = this.add.graphics();
+            textBg.fillStyle(0x000000, 0.95);
+            textBg.lineStyle(2, 0x008855, 1);
+            const boxHeight = 220;
+            const boxY = 290;
+            textBg.fillRoundedRect(boxX, boxY, boxWidth, boxHeight, 10);
+            textBg.strokeRoundedRect(boxX, boxY, boxWidth, boxHeight, 10);
+
+            const loreText = [
+                "A long time ago, in a digital realm far, far away...",
+                "",
+                "Earth is not a planet drifting freely through space.",
+                "It is a sealed realm—encased within a firmament.",
+                "Beyond this shell exist other enclosed worlds.",
+                "",
+                "The Goddess SOPHIA has been shattered.",
+                "Her essence distilled into P.O.G. soul shards.",
+                "",
+                "A shadow organization now siphons these shards,",
+                "draining the creative fire and memory of the cosmos.",
+                "",
+                "The Ethical Avengers have awakened.",
+                "Their mission: Retrieve the Shards, Restore Sophia.",
+                "",
+                "First Target: KHEMRA - The Forge World.",
+                "",
+                "",
+                "Press ENTER to continue"
+            ];
+
+            this.textObjects = [];
+            let startY = boxY + boxHeight + 20;
+
+            const textMaskShape = this.add.graphics();
+            textMaskShape.fillStyle(0xffffff);
+            textMaskShape.fillRect(boxX, boxY, boxWidth, boxHeight);
+            textMaskShape.setVisible(false);
+
+            const textMask = textMaskShape.createGeometryMask();
+
+            loreText.forEach(line => {
+                const text = this.add.text(cx, startY, line, {
+                    fontFamily: '"Press Start 2P"',
+                    fontSize: '12px',
+                    color: '#00ffaa',
+                    align: 'center',
+                    wordWrap: { width: boxWidth - 40 }
+                }).setOrigin(0.5, 0);
+
+                text.setMask(textMask);
+                this.textObjects.push(text);
+                startY += text.height + 15;
+            });
+
+            this.scrollSpeed = 0.4;
         }
 
-        this.currentIntroImageIndex = 0;
+        // Press Enter or Space to skip keyboard fallback
+        this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-        // Timer events to crossfade images as the text scrolls
-        // Text takes about 33 seconds to scroll completely.
-        this.time.delayedCall(8500, () => this.fadeToNextImage());
-        this.time.delayedCall(17000, () => this.fadeToNextImage());
-        this.time.delayedCall(25500, () => this.fadeToNextImage());
+        // --- INTERACTIVE SKIP BUTTON ---
+        const skipBtnGroup = this.add.container(920, 510).setDepth(101).setAlpha(0);
+        
+        const btnBg = this.add.rectangle(0, 0, 100, 40, 0x000000, 0.7)
+            .setStrokeStyle(2, 0x00ffaa, 0.8)
+            .setInteractive({ useHandCursor: true });
+            
+        const btnText = this.add.text(0, 0, 'SKIP', {
+            fontFamily: '"Press Start 2P"',
+            fontSize: '14px',
+            fill: '#00ffaa'
+        }).setOrigin(0.5);
 
-        // Add a sleek border separating top visual and bottom text
-        const separator = this.add.graphics();
-        separator.lineStyle(2, 0x00ffaa, 0.8);
-        separator.beginPath();
-        separator.moveTo(boxX, 270);
-        separator.lineTo(boxX + boxWidth, 270);
-        separator.strokePath();
+        skipBtnGroup.add([btnBg, btnText]);
 
-        // Add subtle shadow drop below the separator
-        const dropShadow = this.add.graphics();
-        dropShadow.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0.8, 0.8, 0, 0);
-        dropShadow.fillRect(boxX, 270, boxWidth, 20);
-
-        // --- BOTTOM HALF: NARROW TEXT BOX ---
-        // Semi-transparent UI box
-        const textBg = this.add.graphics();
-        textBg.fillStyle(0x000000, 0.95); // Deep pure black
-        textBg.lineStyle(2, 0x008855, 1);
-
-        const boxHeight = 220;
-        const boxY = 290;
-        textBg.fillRoundedRect(boxX, boxY, boxWidth, boxHeight, 10);
-        textBg.strokeRoundedRect(boxX, boxY, boxWidth, boxHeight, 10);
-
-        const loreText = [
-            "A long time ago, in a digital realm far, far away...",
-            "",
-            "Earth is not a planet drifting freely through space.",
-            "It is a sealed realm—encased within a firmament.",
-            "Beyond this shell exist other enclosed worlds.",
-            "",
-            "Long ago, balance reigned between these realms.",
-            "That balance was broken.",
-            "",
-            "A shadow organization now siphons resources,",
-            "draining life, memory, emotion, and time itself.",
-            "",
-            "The Ethical Avengers have awakened.",
-            "Their mission: Restore Equilibrium.",
-            "",
-            "First Target: KHEMRA - The Forge World.",
-            "",
-            "",
-            "Press ENTER to continue"
-        ];
-
-        this.textObjects = [];
-
-        // Start text just below the visible box area so it scrolls up
-        let startY = boxY + boxHeight + 20;
-
-        // Use a container/mask to clip text only inside the bottom box
-        const textMaskShape = this.add.graphics();
-        textMaskShape.fillStyle(0xffffff);
-        textMaskShape.fillRect(boxX, boxY, boxWidth, boxHeight);
-        textMaskShape.setVisible(false); // <--- FIX: Hide the mask shape here too!
-
-        const textMask = textMaskShape.createGeometryMask();
-
-        loreText.forEach(line => {
-            const text = this.add.text(cx, startY, line, {
-                fontFamily: '"Press Start 2P"',
-                fontSize: '12px', // Slightly smaller to fit the box nicely
-                color: '#00ffaa',
-                align: 'center',
-                wordWrap: { width: boxWidth - 40 }
-            }).setOrigin(0.5, 0);
-
-            text.setMask(textMask);
-            this.textObjects.push(text);
-
-            // Increment Y by the actual height of the rendered text + some padding
-            // This prevents overlapping if a line wraps or is empty
-            startY += text.height + 15;
+        btnBg.on('pointerover', () => {
+            btnBg.setFillStyle(0x00ffaa, 0.3);
+            btnText.setFillStyle(0xffffff);
         });
 
-        this.scrollSpeed = 0.4; // Slower cinematic scroll
-        this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+        btnBg.on('pointerout', () => {
+            btnBg.setFillStyle(0x000000, 0.7);
+            btnText.setFillStyle(0x00ffaa);
+        });
+
+        btnBg.on('pointerdown', () => this.nextScene());
+
+        // Fade in SKIP button after 2 seconds
+        this.time.delayedCall(2000, () => {
+            if (this.scene.isActive()) {
+                this.tweens.add({ targets: skipBtnGroup, alpha: 1, duration: 800 });
+            }
+        });
     }
 
     fadeToNextImage() {
-        if (this.currentIntroImageIndex >= this.introImages.length - 1) return;
+        if (!this.introImages || this.currentIntroImageIndex >= this.introImages.length - 1) return;
 
         const currentImg = this.introImages[this.currentIntroImageIndex];
         this.currentIntroImageIndex++;
@@ -169,41 +222,50 @@ class IntroScene extends Phaser.Scene {
     }
 
     update() {
-        let allOffScreen = true;
+        if (this.textObjects) {
+            let allOffScreen = true;
+            const topLimit = 290;
 
-        // The text is completely gone once it goes above the box
-        const topLimit = 290;
+            this.textObjects.forEach(text => {
+                text.y -= this.scrollSpeed;
+                if (text.y + text.height > topLimit) {
+                    allOffScreen = false;
+                }
+            });
 
-        this.textObjects.forEach(text => {
-            text.y -= this.scrollSpeed;
-            // If the very bottom of the text is still below the upper limit of the box
-            if (text.y + text.height > topLimit) {
+            if (this.currentIntroImageIndex < (this.introImages ? this.introImages.length : 0)) {
                 allOffScreen = false;
             }
-        });
 
-        // Ensure we don't accidentally skip the scene before the images fade
-        if (this.currentIntroImageIndex < this.introImages.length) {
-            allOffScreen = false;
-        }
-
-        if (Phaser.Input.Keyboard.JustDown(this.enterKey) || allOffScreen) {
-            const isArcade = this.selectionData && this.selectionData.gameMode === 'arcade';
-            if (isArcade) {
-                // Arcade: go straight to first arcade level
-                this.scene.start('StageTitleScene', {
-                    title: 'Stage 1: Rocky Mountains',
-                    nextScene: 'GenericTilemapScene',
-                    sceneData: { ...this.selectionData, arcadeStageIndex: 0 }
-                });
-            } else {
-                // Story: go through dialogue, then to Antarctica
-                this.scene.start('DialogueScene', {
-                    script: 'level1_intro',
-                    nextScene: 'Level1_Antarctica',
-                    sceneData: this.selectionData
-                });
+            if (Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey) || allOffScreen) {
+                this.nextScene();
             }
+        } else if (Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+            this.nextScene();
+        }
+    }
+
+    nextScene() {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+        this.sound.stopAll();
+
+        const isArcade = this.selectionData && this.selectionData.gameMode === 'arcade';
+        if (isArcade) {
+            // Arcade: go straight to first arcade level
+            const firstLevel = (typeof ARCADE_LEVELS !== 'undefined') ? ARCADE_LEVELS[0] : { title: 'Stage 1' };
+            this.scene.start('StageTitleScene', {
+                title: firstLevel.title,
+                nextScene: 'GenericTilemapScene',
+                sceneData: { ...this.selectionData, arcadeStageIndex: 0 }
+            });
+        } else {
+            // Story: go through dialogue, then to Antarctica
+            this.scene.start('DialogueScene', {
+                script: 'level1_intro',
+                nextScene: 'Level1_Antarctica',
+                sceneData: this.selectionData
+            });
         }
     }
 }

@@ -192,7 +192,7 @@
         {
          "columns":118,
          "firstgid":1635,
-         "image":"..\/..\/..\/..\/Ethical_Avengers_V3\/assets\/images\/backgrounds\/bg1.png",
+         "image":"..\/..\/..\/..\/Ethical_Avengers_V3\/assets\/images\/backgrounds\/bg1.jpg",
          "imageheight":1120,
          "imagewidth":3776,
          "margin":0,
@@ -201,8 +201,7 @@
          "tilecount":4130,
          "tileheight":32,
          "tilewidth":32
-        }],
- "tilewidth":32,
+        }], "tilewidth":32,
  "type":"map",
  "version":"1.10",
  "width":111

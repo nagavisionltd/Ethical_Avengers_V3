@@ -4,43 +4,51 @@ class Level1_Antarctica extends BaseScene {
     }
 
     create(data) {
-        this.charKey = data.char || 'default'; // Store for goal transition
-        this.isRestarting = false; // Guard against infinite restart loop
+        this.sound.stopAll();
+        this.sound.play('m1', { loop: true, volume: 0.5 });
+        this.charKey = data.char || 'default'; 
+        this.isRestarting = false; 
+        this.isWinning = false;
 
         this.cameras.main.setBackgroundColor('#000000');
         this.cameras.main.fadeIn(500);
 
-        // 1. Load the Tiled map
         const map = this.make.tilemap({ key: 'tm_antarctica' });
-        const SCALE = 2; // Standard scaling for 16-bit tilesets
-        const levelW = Math.max(960, map.widthInPixels * SCALE);
-        const levelH = Math.max(540, map.heightInPixels * SCALE);
+        const SCALE = 2; 
+        // Guarantee huge horizontal scrolling space even if map parsing fails
+        const levelW = Math.max(7680, (map.widthInPixels || 0) * SCALE);
+        const levelH = Math.max(1080, (map.heightInPixels || 0) * SCALE);
 
         this.physics.world.setBounds(0, 0, levelW, levelH);
-        this.cameras.main.setBounds(0, 0, levelW, levelH);
+        // Remove height bound to allow vertical scrolling even if map is short
+        this.cameras.main.setBounds(0, -2000, levelW, levelH + 4000); 
 
-        // 2. Fixed Background Layer
         this.bg = this.add.image(0, 0, 'bg_antarctica').setOrigin(0, 0).setDepth(0).setScrollFactor(0);
         this.bg.setScale(Math.max(960 / this.bg.width, 540 / this.bg.height));
 
-        // 3. Render Ground Tile Layer
         const tiles = map.addTilesetImage('antarctica_tiles', 'antarctica_tiles');
         if (tiles) {
-            const groundLayer = map.createLayer('ground', tiles, 0, 0);
-            if (groundLayer) groundLayer.setScale(SCALE).setDepth(10);
-        } else {
-            console.warn("Failed to load tileset 'antarctica_tiles' for map 'tm_antarctica'");
+            this.groundLayer = map.createLayer('ground', tiles, 0, 0);
+            if (this.groundLayer) {
+                this.groundLayer.setScale(SCALE).setDepth(10);
+
+            }
         }
 
-        // 4. Object-based Collisions Layer
+        // Helper: case-insensitive object layer lookup
+        const findObjectLayer = (name) => {
+            const lower = name.toLowerCase();
+            return map.objects?.find(l => l.name.toLowerCase() === lower) || map.getObjectLayer(name);
+        };
+
         this.collisionBoxes = this.physics.add.staticGroup();
-        const collisionLayer = map.getObjectLayer('collisions');
+        const collisionLayer = findObjectLayer('collisions');
         if (collisionLayer && collisionLayer.objects) {
             collisionLayer.objects.forEach(obj => {
                 let boxX = obj.x * SCALE;
                 let boxY = obj.y * SCALE;
                 let boxW = obj.width * SCALE;
-                let boxH = Math.max(obj.height * SCALE, 64);
+                let boxH = obj.height * SCALE;
 
                 if (obj.polygon) {
                     let minX = 0, minY = 0, maxX = 0, maxY = 0;
@@ -49,25 +57,18 @@ class Level1_Antarctica extends BaseScene {
                         if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
                     });
                     boxW = (maxX - minX) * SCALE;
-                    boxH = Math.max((maxY - minY) * SCALE, 64);
+                    boxH = (maxY - minY) * SCALE;
                     boxX = (obj.x + minX) * SCALE;
                     boxY = (obj.y + minY) * SCALE;
                 }
 
                 const zone = this.add.rectangle(boxX + (boxW / 2), boxY + (boxH / 2), boxW, boxH, 0xff0000, 0);
                 this.physics.add.existing(zone, true);
-
-                if (obj.type && obj.type.toLowerCase() === 'jumpthrough') {
-                    zone.body.checkCollision.down = false;
-                    zone.body.checkCollision.left = false;
-                    zone.body.checkCollision.right = false;
-                }
                 this.collisionBoxes.add(zone);
             });
         }
 
-        // 5. Spawn Locations
-        const spawnLayer = map.getObjectLayer('spawns');
+        const spawnLayer = findObjectLayer('spawns');
         let playerStartX = 150;
         let playerStartY = levelH / 2;
 
@@ -78,86 +79,69 @@ class Level1_Antarctica extends BaseScene {
                 playerStartY = startObj.y * SCALE;
             }
         }
-        this.respawnX = playerStartX;
-        this.respawnY = playerStartY - 50;
 
-        // 6. Init Player
         this.initPlayer(playerStartX, playerStartY, levelW, this.charKey);
         if (this.player) {
             this.player.setDepth(100);
             this.physics.add.collider(this.player, this.collisionBoxes);
+
+
+            // Camera is already set up correctly by initPlayer in BaseScene
+            // Do NOT override startFollow or setFollowOffset here
         }
 
-        // 7. Death Zone (Bottom of the map) - Prevents Infinite Loops with isRestarting flag
-        const deathZone = this.add.rectangle(levelW / 2, levelH + 50, levelW * 2, 100, 0x0000ff, 0.3);
+        const deathZone = this.add.rectangle(levelW / 2, levelH + 50, levelW * 2, 100, 0x0000ff, 0);
         this.physics.add.existing(deathZone, true);
         this.physics.add.overlap(this.player, deathZone, () => {
             if (this.isRestarting) return;
-            if (this.player && this.player.active && !this.player.isDead) {
-                this.isRestarting = true;
-                this.cameras.main.shake(150, 0.02);
-                this.player.setTint(0xff0000);
-                this.cameras.main.fadeOut(300, 0, 0, 0, (cam, progress) => {
-                    if (progress === 1) this.scene.restart({ char: this.charKey });
-                });
-            }
+            this.isRestarting = true;
+            this.cameras.main.fadeOut(300, 0, 0, 0, (cam, progress) => {
+                if (progress === 1) this.scene.restart({ char: this.charKey });
+            });
         });
 
-        // 8. Triggers (Dialogue, Background Swaps, and Exits)
-        const triggerLayer = map.getObjectLayer('triggers');
+        this.shard = this.spawnMemoryShard(levelW - 200, levelH - 100, 'truth');
+
+        const triggerLayer = findObjectLayer('triggers');
         if (triggerLayer && triggerLayer.objects) {
             triggerLayer.objects.forEach(obj => {
                 const zone = this.add.zone((obj.x + obj.width / 2) * SCALE, (obj.y + obj.height / 2) * SCALE, obj.width * SCALE, obj.height * SCALE);
                 this.physics.add.existing(zone, true);
 
-                let isExit = false;
                 let dKey = null;
                 if (obj.properties) {
                     obj.properties.forEach(p => {
-                        if (p.name === 'isExit') isExit = p.value;
                         if (p.name === 'dialogueKey') dKey = p.value;
                     });
                 }
 
                 this.physics.add.overlap(this.player, zone, () => {
-                    // Trigger dialogues or background swaps exactly once
                     if (dKey && !obj.triggered) {
                         obj.triggered = true;
-
-                        // Scene-specific visual swaps
-                        if (obj.name === 'cave_entrance') {
-                            this.bg.setTexture('bg_antarctica_cave');
-                        }
-
-                        // Launch Dialogue
-                        this.sound.stopAll();
+                        if (obj.name === 'cave_entrance') this.bg.setTexture('bg_antarctica_cave');
                         this.scene.pause();
-                        this.scene.launch('DialogueScene', {
-                            script: dKey,
-                            nextScene: this.scene.key,
-                            sceneData: data,
-                            isInternal: true
-                        });
-                    }
-
-                    // Level Exit 
-                    if (isExit && !this.isRestarting) {
-                        this.isRestarting = true;
-                        this.sound.stopAll();
-                        this.cameras.main.fadeOut(1000);
-                        this.time.delayedCall(1000, () => {
-                            this.scene.start('DialogueScene', {
-                                script: 'level1_part2_intro',
-                                nextScene: 'Level1_Hoverboard',
-                                sceneData: { char: this.charKey }
-                            });
-                        });
+                        this.scene.launch('DialogueScene', { script: dKey, nextScene: this.scene.key, sceneData: data, isInternal: true });
                     }
                 });
             });
         }
 
-        // 9. Enemies
+        this.events.on('shard-collected', () => {
+            if (!this.isWinning) {
+                this.isWinning = true;
+                this.sound.stopAll();
+                this.cameras.main.fadeOut(2000);
+                this.time.delayedCall(2000, () => {
+                    this.scene.start('DialogueScene', {
+                        script: 'level2_abyss_descending',
+                        nextScene: 'Level2_Abyss',
+                        sceneData: { char: this.charKey }
+                    });
+                });
+            }
+        });
+
+        let spawnedEnemyCount = 0;
         if (spawnLayer && spawnLayer.objects) {
             spawnLayer.objects.forEach(obj => {
                 if (obj.type === 'enemy') {
@@ -165,37 +149,54 @@ class Level1_Antarctica extends BaseScene {
                     if (obj.properties) {
                         obj.properties.forEach(p => { if (p.name === 'enemyType') eType = p.value; });
                     }
+                    const spawnY = (obj.y + (obj.height || 0)) * SCALE - 40;
                     if (eType === 'drone') {
                         const d = this.spawnDrone(obj.x * SCALE, (obj.y - 60) * SCALE);
-                        if (d) d.setDepth(100);
+                        if (d) { d.setDepth(100); spawnedEnemyCount++; }
                     } else {
-                        const w = this.spawnWalker(obj.x * SCALE, (obj.y) * SCALE - 40);
-                        if (w) w.setDepth(100);
+                        const w = this.spawnWalker(obj.x * SCALE, spawnY);
+                        if (w) { w.setDepth(100); spawnedEnemyCount++; }
                     }
                 }
             });
-            if (this.enemies) {
-                this.physics.add.collider(this.enemies, this.collisionBoxes);
-                this.physics.add.overlap(this.player.hitArea, this.enemies, (h, e) => {
-                    this.onEnemyHit(e, 10, this.player.atkID, this.player.currentKB || 1);
-                }, null, this);
-                this.physics.add.overlap(this.projs, this.enemies, (p, e) => {
-                    this.onEnemyHit(e, 20, p.getData('atkID'), 1);
-                    p.destroy();
-                }, null, this);
+        }
+
+        // FALLBACK: guarantee enemies if Tiled map has no enemy spawn objects
+        if (spawnedEnemyCount === 0) {
+            const waveCount = 5;
+            const spawnFloorY = levelH - 100;
+            for (let i = 0; i < waveCount; i++) {
+                const xPos = playerStartX + 400 + (i * (levelW / waveCount));
+                if (xPos >= levelW - 200) continue;
+                if (i % 3 === 0) {
+                    const d = this.spawnDrone(xPos, spawnFloorY - 150);
+                    if (d) d.setDepth(100);
+                } else {
+                    const w = this.spawnWalker(xPos, spawnFloorY - 40);
+                    if (w) w.setDepth(100);
+                }
             }
         }
 
-        // Launch UI
+        this.physics.add.collider(this.enemies, this.collisionBoxes);
+
+        this.physics.add.overlap(this.player.hitArea, this.enemies, (h, e) => {
+            this.onEnemyHit(e, this.player.currentDmg || 10, this.player.atkID, this.player.currentKB || 1);
+        }, null, this);
+
+        this.physics.add.overlap(this.projs, this.enemies, (p, e) => {
+            this.onEnemyHit(e, 20, p.getData('atkID'), 1);
+            p.destroy();
+        }, null, this);
+
         this.scene.launch('UIScene', { char: this.charKey });
     }
 
     update() {
         if (this.player && this.player.active) {
-            this.player.update(this.cursors);
+            this.player.update();
+            this.updateCameraLookAhead();
         }
-        if (this.enemies) {
-            this.enemies.getChildren().forEach(e => { if (e.update) e.update(); });
-        }
+        if (this.enemies) this.enemies.getChildren().forEach(e => { if (e.update) e.update(); });
     }
 }

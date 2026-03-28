@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Platformer Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: monospace;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            color: #00ffaa;
+            font-size: 14px;
+            text-align: center;
+        }
+        canvas {
+            border: 3px solid #00ffaa;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <strong>ARROW KEYS</strong> - Move | <strong>SPACE</strong> - Jump | <strong>Z</strong> - Attack
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 450,
+            backgroundColor: '#16213e',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 800 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        const game = new Phaser.Game(config);
+
+        let player;
+        let cursors;
+        let keySpace;
+        let keyZ;
+        let platforms;
+
+        function preload() {
+            // Create textures programmatically
+            const graphics = this.make.graphics();
+
+            // Ground texture
+            graphics.fillStyle(0x0f3460, 1);
+            graphics.fillRect(0, 0, 32, 32);
+            graphics.fillStyle(0x1a4a7a, 1);
+            graphics.fillRect(4, 4, 24, 24);
+            graphics.generateTexture('ground', 32, 32);
+
+            // Platform texture
+            graphics.clear();
+            graphics.fillStyle(0x6633cc, 1);
+            graphics.fillRect(0, 0, 32, 16);
+            graphics.fillStyle(0x9966ff, 1);
+            graphics.fillRect(4, 4, 24, 8);
+            graphics.generateTexture('platform', 32, 16);
+
+            // Player texture (Lord Soul colors)
+            graphics.clear();
+            graphics.fillStyle(0x6633cc, 1);
+            graphics.fillRect(0, 0, 32, 48);
+            graphics.fillStyle(0x00ffaa, 1);
+            graphics.fillRect(8, 12, 16, 8); // Eye glow
+            graphics.generateTexture('player', 32, 48);
+
+            // Enemy texture
+            graphics.clear();
+            graphics.fillStyle(0xff3366, 1);
+            graphics.fillRect(0, 0, 32, 32);
+            graphics.fillStyle(0xff6699, 1);
+            graphics.fillRect(6, 6, 20, 20);
+            graphics.generateTexture('enemy', 32, 32);
+        }
+
+        function create() {
+            // Create platform group
+            platforms = this.physics.add.staticGroup();
+
+            // Ground (100 tiles = 3200px wide)
+            for (let i = 0; i < 100; i++) {
+                platforms.create(i * 32, 434, 'ground');
+            }
+
+            // Section 1 (0-800px)
+            platforms.create(200, 350, 'platform');
+            platforms.create(232, 350, 'platform');
+            platforms.create(264, 350, 'platform');
+
+            platforms.create(400, 280, 'platform');
+            platforms.create(432, 280, 'platform');
+            platforms.create(464, 280, 'platform');
+            platforms.create(496, 280, 'platform');
+
+            platforms.create(150, 200, 'platform');
+            platforms.create(182, 200, 'platform');
+
+            platforms.create(600, 180, 'platform');
+            platforms.create(632, 180, 'platform');
+            platforms.create(664, 180, 'platform');
+
+            // Section 2 (800-1600px)
+            platforms.create(850, 350, 'platform');
+            platforms.create(882, 350, 'platform');
+            platforms.create(914, 350, 'platform');
+            platforms.create(946, 350, 'platform');
+
+            platforms.create(1050, 280, 'platform');
+            platforms.create(1082, 280, 'platform');
+            platforms.create(1114, 280, 'platform');
+
+            platforms.create(1200, 200, 'platform');
+            platforms.create(1232, 200, 'platform');
+            platforms.create(1264, 200, 'platform');
+            platforms.create(1296, 200, 'platform');
+            platforms.create(1328, 200, 'platform');
+
+            platforms.create(1450, 150, 'platform');
+            platforms.create(1482, 150, 'platform');
+
+            // Section 3 (1600-2400px)
+            platforms.create(1700, 350, 'platform');
+            platforms.create(1732, 350, 'platform');
+
+            platforms.create(1850, 300, 'platform');
+            platforms.create(1882, 300, 'platform');
+            platforms.create(1914, 300, 'platform');
+
+            platforms.create(2000, 250, 'platform');
+            platforms.create(2032, 250, 'platform');
+            platforms.create(2064, 250, 'platform');
+            platforms.create(2096, 250, 'platform');
+
+            platforms.create(2150, 180, 'platform');
+            platforms.create(2182, 180, 'platform');
+            platforms.create(2214, 180, 'platform');
+
+            platforms.create(2300, 120, 'platform');
+            platforms.create(2332, 120, 'platform');
+
+            // Section 4 (2400-3200px)
+            platforms.create(2500, 350, 'platform');
+            platforms.create(2532, 350, 'platform');
+            platforms.create(2564, 350, 'platform');
+
+            platforms.create(2650, 280, 'platform');
+            platforms.create(2682, 280, 'platform');
+            platforms.create(2714, 280, 'platform');
+            platforms.create(2746, 280, 'platform');
+
+            platforms.create(2800, 200, 'platform');
+            platforms.create(2832, 200, 'platform');
+            platforms.create(2864, 200, 'platform');
+
+            platforms.create(2950, 150, 'platform');
+            platforms.create(2982, 150, 'platform');
+            platforms.create(3014, 150, 'platform');
+            platforms.create(3046, 150, 'platform');
+
+            // Goal flag at end
+            const goal = this.add.rectangle(3100, 400, 20, 60, 0x00ffaa);
+            const goalTop = this.add.rectangle(3100, 370, 40, 10, 0xffff00);
+
+            // Player
+            player = this.physics.add.sprite(100, 350, 'player');
+            player.setCollideWorldBounds(true);
+            player.setDragX(500);
+            player.setMaxVelocity(300, 500);
+
+            // Camera follow player
+            this.cameras.main.startFollow(player, true, 0.1, 0.1);
+            this.cameras.main.setBounds(0, 0, 3200, 450);
+
+            // Physics world bounds
+            this.physics.world.setBounds(0, 0, 3200, 450);
+
+            // Collisions
+            this.physics.add.collider(player, platforms);
+
+            // Input
+            cursors = this.input.keyboard.createCursorKeys();
+            keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+            keyZ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+
+            // Attack hitbox (hidden)
+            this.attackHitbox = this.add.rectangle(0, 0, 40, 40, 0x00ff00, 0.3);
+            this.attackHitbox.setVisible(false);
+            this.physics.add.existing(this.attackHitbox);
+            this.attackHitbox.body.allowGravity = false;
+
+            // Enemies (spread throughout the level)
+            this.enemies = this.physics.add.group();
+            
+            // Section 1
+            this.enemies.create(400, 400, 'enemy');
+            this.enemies.create(550, 400, 'enemy');
+            
+            // Section 2
+            this.enemies.create(900, 400, 'enemy');
+            this.enemies.create(1100, 400, 'enemy');
+            this.enemies.create(1300, 400, 'enemy');
+            
+            // Section 3
+            this.enemies.create(1750, 400, 'enemy');
+            this.enemies.create(1950, 400, 'enemy');
+            this.enemies.create(2100, 400, 'enemy');
+            this.enemies.create(2250, 400, 'enemy');
+            
+            // Section 4
+            this.enemies.create(2550, 400, 'enemy');
+            this.enemies.create(2750, 400, 'enemy');
+            this.enemies.create(2900, 400, 'enemy');
+
+            this.physics.add.collider(this.enemies, platforms);
+            this.physics.add.overlap(this.attackHitbox, this.enemies, hitEnemy, null, this);
+
+            // Attack state
+            this.isAttacking = false;
+            this.attackCooldown = false;
+
+            // HUD
+            this.hpText = this.add.text(20, 20, 'HP: 100', {
+                fontFamily: 'monospace',
+                fontSize: '18px',
+                color: '#00ffaa'
+            }).setScrollFactor(0);
+
+            this.scoreText = this.add.text(780, 20, 'SCORE: 0', {
+                fontFamily: 'monospace',
+                fontSize: '18px',
+                color: '#ffffff'
+            }).setScrollFactor(0).setOrigin(1, 0);
+
+            this.distanceText = this.add.text(20, 45, 'DIST: 0m / 3200m', {
+                fontFamily: 'monospace',
+                fontSize: '14px',
+                color: '#ffff00'
+            }).setScrollFactor(0);
+
+            this.score = 0;
+            this.playerHP = 100;
+
+            // Combo display
+            this.comboText = this.add.text(400, 50, '', {
+                fontFamily: 'monospace',
+                fontSize: '24px',
+                color: '#ffff00',
+                stroke: '#000000',
+                strokeThickness: 4
+            }).setScrollFactor(0).setOrigin(0.5, 0);
+
+            this.combo = 0;
+        }
+
+        function update(time, delta) {
+            // Movement
+            const speed = 400;
+
+            if (cursors.left.isDown) {
+                player.setVelocityX(-speed);
+                player.setFlipX(true);
+            } else if (cursors.right.isDown) {
+                player.setVelocityX(speed);
+                player.setFlipX(false);
+            } else {
+                player.setVelocityX(0);
+            }
+
+            // Jump
+            if (Phaser.Input.Keyboard.JustDown(keySpace)) {
+                if (player.body.touching.down) {
+                    player.setVelocityY(-600);
+                }
+            }
+
+            // Attack
+            if (Phaser.Input.Keyboard.JustDown(keyZ) && !this.isAttacking && !this.attackCooldown) {
+                performAttack.call(this);
+            }
+
+            // Update attack hitbox position
+            if (this.isAttacking) {
+                this.attackHitbox.x = player.x + (player.flipX ? -30 : 30);
+                this.attackHitbox.y = player.y;
+            }
+
+            // Simple enemy AI
+            this.enemies.getChildren().forEach(enemy => {
+                if (enemy.body.touching.down) {
+                    enemy.setVelocityX(enemy.velocityX || 50);
+                }
+
+                // Bounce off walls
+                if (enemy.x <= 0 || enemy.x >= 768) {
+                    enemy.setVelocityX(-enemy.body.velocity.x);
+                }
+
+                // Check if hit by player
+                if (enemy.hitTimer) {
+                    enemy.hitTimer -= delta;
+                    if (enemy.hitTimer <= 0) {
+                        enemy.setTint(0xffffff);
+                    }
+                }
+            });
+
+            // Update HUD
+            this.hpText.setText(`HP: ${this.playerHP}`);
+            this.scoreText.setText(`SCORE: ${this.score}`);
+            this.distanceText.setText(`DIST: ${Math.floor(player.x)}m / 3200m`);
+
+            // Check if reached goal
+            if (player.x >= 3080) {
+                this.showFloatingText('🎉 LEVEL COMPLETE! 🎉', player.x, player.y - 50, '#00ffaa');
+                this.time.delayedCall(2000, () => {
+                    player.x = 100;
+                    player.y = 350;
+                    this.score = 0;
+                });
+            }
+        }
+
+        function performAttack() {
+            this.isAttacking = true;
+            this.attackHitbox.setVisible(true);
+
+            // Flash player
+            player.setTint(0x00ffaa);
+
+            // Combo counter
+            this.combo++;
+            if (this.combo > 1) {
+                this.comboText.setText(`COMBO x${this.combo}!`);
+                this.comboText.alpha = 1;
+                this.tweens.add({
+                    targets: this.comboText,
+                    alpha: 0,
+                    duration: 1000
+                });
+            }
+
+            // Reset after short duration
+            this.time.delayedCall(150, () => {
+                this.isAttacking = false;
+                this.attackHitbox.setVisible(false);
+                player.clearTint();
+            });
+
+            // Cooldown
+            this.attackCooldown = true;
+            this.time.delayedCall(300, () => {
+                this.attackCooldown = false;
+            });
+        }
+
+        function hitEnemy(hitbox, enemy) {
+            if (enemy.hitTimer) return; // Already hit
+
+            // Knockback
+            const knockbackDir = enemy.x < player.x ? -1 : 1;
+            enemy.setVelocityX(knockbackDir * 200);
+            enemy.setVelocityY(-150);
+
+            // Flash red
+            enemy.setTint(0xff0000);
+            enemy.hitTimer = 500;
+
+            // Score
+            this.score += 100;
+
+            // Combo reset timer
+            this.time.delayedCall(2000, () => {
+                this.combo = 0;
+                this.comboText.setText('');
+            });
+        }
+
+        function showFloatingText(text, x, y, color) {
+            const floatText = this.add.text(x, y, text, {
+                fontFamily: 'monospace',
+                fontSize: '24px',
+                color: color || '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 4
+            }).setOrigin(0.5);
+
+            this.tweens.add({
+                targets: floatText,
+                y: y - 80,
+                alpha: 0,
+                duration: 1500,
+                onComplete: () => floatText.destroy()
+            });
+        }
+    </script>
+</body>
+</html>

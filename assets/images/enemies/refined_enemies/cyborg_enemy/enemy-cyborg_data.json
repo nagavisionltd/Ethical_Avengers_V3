@@ -1,0 +1,192 @@
+{
+  "filename": "enemy-cyborg.png",
+  "width": 2816,
+  "height": 1504,
+  "frames": [
+    {
+      "id": "frame_1",
+      "name": "sprite_001",
+      "x": 61,
+      "y": 53,
+      "width": 262,
+      "height": 396
+    },
+    {
+      "id": "frame_2",
+      "name": "sprite_002",
+      "x": 394,
+      "y": 53,
+      "width": 263,
+      "height": 396
+    },
+    {
+      "id": "frame_3",
+      "name": "sprite_003",
+      "x": 613,
+      "y": 60,
+      "width": 10,
+      "height": 11
+    },
+    {
+      "id": "frame_4",
+      "name": "sprite_004",
+      "x": 1283,
+      "y": 73,
+      "width": 207,
+      "height": 380
+    },
+    {
+      "id": "frame_5",
+      "name": "sprite_005",
+      "x": 1527,
+      "y": 73,
+      "width": 235,
+      "height": 381
+    },
+    {
+      "id": "frame_6",
+      "name": "sprite_006",
+      "x": 1795,
+      "y": 79,
+      "width": 244,
+      "height": 375
+    },
+    {
+      "id": "frame_7",
+      "name": "sprite_007",
+      "x": 2136,
+      "y": 79,
+      "width": 250,
+      "height": 375
+    },
+    {
+      "id": "frame_8",
+      "name": "sprite_008",
+      "x": 2390,
+      "y": 79,
+      "width": 285,
+      "height": 374
+    },
+    {
+      "id": "frame_9",
+      "name": "sprite_009",
+      "x": 76,
+      "y": 590,
+      "width": 345,
+      "height": 365
+    },
+    {
+      "id": "frame_10",
+      "name": "sprite_010",
+      "x": 407,
+      "y": 582,
+      "width": 340,
+      "height": 373
+    },
+    {
+      "id": "frame_11",
+      "name": "sprite_011",
+      "x": 755,
+      "y": 552,
+      "width": 301,
+      "height": 403
+    },
+    {
+      "id": "frame_12",
+      "name": "sprite_012",
+      "x": 1252,
+      "y": 578,
+      "width": 383,
+      "height": 378
+    },
+    {
+      "id": "frame_13",
+      "name": "sprite_013",
+      "x": 1743,
+      "y": 576,
+      "width": 423,
+      "height": 385
+    },
+    {
+      "id": "frame_14",
+      "name": "sprite_014",
+      "x": 1595,
+      "y": 1048,
+      "width": 685,
+      "height": 396
+    },
+    {
+      "id": "frame_15",
+      "name": "sprite_015",
+      "x": 2378,
+      "y": 1040,
+      "width": 337,
+      "height": 411
+    },
+    {
+      "id": "frame_16",
+      "name": "sprite_016",
+      "x": 2651,
+      "y": 1047,
+      "width": 18,
+      "height": 17
+    },
+    {
+      "id": "frame_17",
+      "name": "sprite_017",
+      "x": 797,
+      "y": 1097,
+      "width": 224,
+      "height": 347
+    },
+    {
+      "id": "frame_18",
+      "name": "sprite_018",
+      "x": 2561,
+      "y": 1078,
+      "width": 11,
+      "height": 13
+    },
+    {
+      "id": "frame_19",
+      "name": "sprite_019",
+      "x": 2632,
+      "y": 1065,
+      "width": 30,
+      "height": 34
+    },
+    {
+      "id": "frame_20",
+      "name": "sprite_020",
+      "x": 522,
+      "y": 1108,
+      "width": 227,
+      "height": 335
+    },
+    {
+      "id": "frame_21",
+      "name": "sprite_021",
+      "x": 2658,
+      "y": 1157,
+      "width": 15,
+      "height": 14
+    },
+    {
+      "id": "frame_22",
+      "name": "sprite_022",
+      "x": 1080,
+      "y": 1237,
+      "width": 369,
+      "height": 197
+    },
+    {
+      "id": "frame_23",
+      "name": "sprite_023",
+      "x": 1977,
+      "y": 1211,
+      "width": 19,
+      "height": 90
+    }
+  ],
+  "detectedAt": "2026-01-03T14:59:28.452Z"
+}

@@ -27,12 +27,12 @@ class Boot extends Phaser.Scene {
         this.load.image('portal', 'assets/ui/world_map.png');
 
         // --- INTRO ASSETS ---
-        this.load.video('logo_intro', 'assets/video/logo_intro.mp4');
-        this.load.video('intro_clip_1', 'assets/video/intro_clip_1.mp4');
-        this.load.video('intro_clip_2', 'assets/video/intro_clip_2.mp4');
+        this.load.video('intro_video', 'assets/video/ethical_avengers_HYPERLAPSE_V3.mp4');
+        this.load.video('arcade_intro_video', 'assets/video/ethical_avengers_HYPERLAPSE_V3.mp4');
         this.load.audio('intro_music', 'assets/audio/intro_music.mp3');
         // --- TILESETS ---
         this.load.image('antarctica_tiles', 'assets/images/tilesets/antarctica_tileset.png');
+        this.load.image('icy_glacier_tiles', 'assets/images/tilesets/icy_glacier_tiles.png');
         this.load.image('white_pixel', 'assets/ui/white_pixel.png');
 
         // --- HUD PORTRAITS (Fixed Spritesheet Style from Reference Sheets) ---
@@ -44,7 +44,7 @@ class Boot extends Phaser.Scene {
         this.load.image('hud_portrait_sophia', 'assets/ui/portraits/fixed/hud_sophia_v2.png');
 
         // --- LEVEL BACKGROUNDS ---
-        this.load.image('bg1', 'assets/images/backgrounds/bg1.png');
+        this.load.image('bg1', 'assets/images/backgrounds/bg1.jpg');
         this.load.image('bg_antarctica', 'assets/images/backgrounds/antarctica_bg.png');
         this.load.image('bg_antarctica_cave', 'assets/images/backgrounds/antarctica_cave_bg.png');
         this.load.image('floor', 'assets/images/tiles/ground_tile_v1.png');
@@ -63,7 +63,7 @@ class Boot extends Phaser.Scene {
         this.load.image('lab_platform', 'assets/levels/Lab-level/lab-part-2/PNG/tile-set-sci-fi-interior-platform.png');
 
         // --- PLACEHOLDER ASSETS (For missing files) ---
-        this.load.image('aetherion_bg', 'assets/images/backgrounds/bg1.png');
+        this.load.image('aetherion_bg', 'assets/images/backgrounds/bg1.jpg');
         this.load.image('aetherion_tileset', 'assets/images/Environments/sci-fi-interior-paltform/PNG/tile-set-sci-fi-interior-platform.png');
         this.load.image('terra_tileset', 'assets/images/Environments/sci-fi-interior-paltform/PNG/tile-set-sci-fi-interior-platform.png');
 
@@ -80,7 +80,21 @@ class Boot extends Phaser.Scene {
 
         // --- ARCADE ---
         // --- TILEMAPS ---
-        this.load.tilemapTiledJSON('tm_antarctica', 'assets/tilemaps/antarctica_stage.json');
+        this.load.tilemapTiledJSON('tm_level1_v6', 'assets/tilemaps/v6_level_1_antartica.tmj?v=2026');
+        this.load.tilemapTiledJSON('tm_level1_part2_v6', 'assets/tilemaps/v6_level_1_antartica_part_2.tmj?v=2026');
+        this.load.tilemapTiledJSON('tm_level1_part3_v6', 'assets/tilemaps/v6_level_1_antartica_part_3.tmj?v=2026');
+        this.load.tilemapTiledJSON('tm_level1_part4_v6', 'assets/tilemaps/v6_level_1_antartica_part_4_Boss.tmj?v=2026');
+        this.load.tilemapTiledJSON('tm_level2_v6', 'assets/tilemaps/v6_level_2_inside_basev2.tmj?v=2026');
+        this.load.tilemapTiledJSON('tm_antarctica', 'assets/tilemaps/v6_level_1_antarticav2.tmj');
+        
+        // --- Train Station Levels ---
+        this.load.tilemapTiledJSON('v6_level_train_station', 'assets/tilemaps/v6_level_train_station.tmj?v=2026');
+        this.load.tilemapTiledJSON('v6_level_train_station_basement', 'assets/tilemaps/v6_level_train_station_basement.tmj?v=2026');
+        this.load.tilemapTiledJSON('v6_level_neelo_megaman', 'assets/tilemaps/neelo_megaman_city_levelv3.tmj?v=2026');
+
+        // Mega Man Tileset
+        this.load.image('megaman_intro_bg', 'assets/images/tilesets/megaman/SNES - Mega Man X - Backgrounds - Intro Stage.png');
+
         this.load.tilemapTiledJSON('tm_rocky_mountains', 'tilemaps26/rocky_mountains_level.tmj?v=17.0');
         this.load.tilemapTiledJSON('tm_arcade_map', 'tilemaps26/arcade-map.tmj?v=17.0');
         this.load.tilemapTiledJSON('tm_night_sky', 'tilemaps26/night-sky.tmj?v=17.0');
@@ -122,6 +136,12 @@ class Boot extends Phaser.Scene {
         this.load.image('sewer_back', 'assets/images/tilesets/sewer/sewer_back.png');
         this.load.image('sewer_front', 'assets/images/tilesets/sewer/sewer_front.png');
         this.load.image('sewer_mid', 'assets/images/tilesets/sewer/sewer_mid.png');
+
+        // --- Train Station Level ---
+        this.load.image('station_bg', 'assets/levels/underwater_station/station_bg.png');
+        this.load.image('hover_train', 'assets/levels/underwater_station/hover_train.png');
+        this.load.image('aquatic_life', 'assets/levels/underwater_station/aquatic_life.png');
+        this.load.image('pickups', 'assets/levels/underwater_station/pickups.png');
 
         // --- Cyber City tilesets ---
         this.load.image('gunstar_heroes_tiles', 'EA_V4/tiles_samples/GUNSTAR-HEROES.png');
@@ -168,6 +188,13 @@ class Boot extends Phaser.Scene {
         this.load.image('mars_floor_004', 'assets/images/tilesets/mars/mars_floor_004.png');
         this.load.image('mars_floor_005', 'assets/images/tilesets/mars/mars_floor_005.png');
         this.load.image('mars_floor_006', 'assets/images/tilesets/mars/mars_floor_006.png');
+
+        // --- BASEMENT LEVEL SUPPLEMENTAL ASSETS ---
+        this.load.image('lava_bg', 'assets/levels/level1_lava/lava_bg.png');
+        this.load.image('virella_tiles', 'assets/levels/level4_virella/virella_tiles.png');
+        this.load.image('virella_bg', 'assets/levels/level4_virella/virella_bg.png');
+        this.load.image('coral_14', 'assets/levels/level4_virella/coral_reef_platformer_tileset_sprites/coral_reef_platformer_tileset_014.png');
+        this.load.image('coral_15', 'assets/levels/level4_virella/coral_reef_platformer_tileset_sprites/coral_reef_platformer_tileset_015.png');
 
         // --- VIDEOS ---
         this.load.video('vid_boss_bg', 'assets/video/level1_boss_bg.mp4');
@@ -345,10 +372,13 @@ class Boot extends Phaser.Scene {
         // Idle (8 frames)
         for (let i = 0; i <= 7; i++) this.load.image(`cn_idle_${i}`, cnPath + `idle/idle_${i}.png`);
         this.load.image('cn_thumb', cnPath + 'idle/idle_0.png');
+        this.load.image('cn_idle_4', cnPath + 'idle/idle_4.png');
         // Run (8 frames)
         for (let i = 0; i <= 7; i++) this.load.image(`cn_run_${i}`, cnPath + `run/run_${i}.png`);
         // Jump (5 frames)
         for (let i = 0; i <= 4; i++) this.load.image(`cn_jump_${i}`, cnPath + `jump/jump_${i}.png`);
+        // Hurt (5 frames)
+        for (let i = 0; i <= 4; i++) this.load.image(`cn_hurt_${i}`, cnPath + `hurt/hurt_${i}.png`);
         // Melee combo (4 hits, 2 frames each) — kept as fallback
         for (let h = 1; h <= 4; h++) {
             this.load.image(`cn_m${h}_1`, cnPath + `melee_combo_${h}/melee_combo_0${h}_1.png`);
@@ -367,6 +397,147 @@ class Boot extends Phaser.Scene {
         this.load.image('cn_sw4_2', cnPath + 'sword_combo_04/sword_combo_04_2.png');
         // Somersault (double jump)
         for (let i = 1; i <= 4; i++) this.load.image(`cn_som_${i}`, cnPath + `somersault_sprites/somersault_00${i}.png`);
+        // Crouch (2 frames)
+        for (let i = 0; i <= 1; i++) this.load.image(`cn_crouch_${i}`, cnPath + `crouch/crouch_0${i}.png`);
+        // Dash (4 frames)
+        for (let i = 0; i <= 3; i++) this.load.image(`cn_dash_${i}`, cnPath + `dash/dash_0${i}.png`);
+        // Energy Blast (3 frames)
+        for (let i = 0; i <= 2; i++) this.load.image(`cn_blast_${i}`, cnPath + `energy_blast/energy_blast_${i}.png`);
+
+        // --- LORD SOUL (naga-soul-26) ---
+        const lsPath = 'assets/images/characters/naga-soul-26/animation_frames/';
+        this.load.image('ls_idle', lsPath + 'idle/idle.png');
+        this.load.image('ls_move', lsPath + 'move.png');
+        
+        // Walk (1-6)
+        for (let i = 1; i <= 6; i++) this.load.image(`ls_walk_${i}`, lsPath + `walk/walk_run_jump_00${i}.png`);
+        // Run (7-14)
+        for (let i = 7; i <= 14; i++) {
+            let fNum = i;
+            if (i === 8) fNum = 7; // Fallback for missing frame 8
+            this.load.image(`ls_run_${i}`, lsPath + `run/walk_run_jump_0${fNum < 10 ? '0' + fNum : fNum}.png`);
+        }
+        
+        for (let i = 1; i <= 6; i++) this.load.image(`ls_fly_${i}`, lsPath + `flying_soul_sprites/flying_soul_00${i}.png`);
+        for (let i = 1; i <= 8; i++) this.load.image(`ls_dash_aura_${i}`, lsPath + `flying_soul_sprites/dash_aura/dash_aura_00${i}.png`);
+        for (let i = 1; i <= 3; i++) this.load.image(`ls_hover_${i}`, lsPath + `hover/hover${i}.png`);
+        
+        // Hurt/Hit frames (ls_hit1 used for lordsoul_hurt anim)
+        this.load.image('ls_hit1_1', lsPath + 'jump_attack/jump_attack/jump_attack_1.png');
+        this.load.image('ls_hit1_2', lsPath + 'jump_attack/jump_attack/jump_attack_2.png');
+        this.load.image('ls_hit2_1', lsPath + 'jump_attack/jump_sword/jump_attack_3.png');
+        this.load.image('ls_hit2_2', lsPath + 'jump_attack/jump_attack/jump_attack_2.png'); // Fallback for missing jump_attack_4
+        
+        // Z Punches (1-8 mapped to 8-hit combo)
+        this.load.image('ls_p1_1', lsPath + 'punches_Z/punch1/jab1.png');
+        this.load.image('ls_p1_2', lsPath + 'punches_Z/punch1/jab2.png');
+        
+        this.load.image('ls_p2_1', lsPath + 'punches_Z/punch2/jab2_1.png');
+        this.load.image('ls_p2_2', lsPath + 'punches_Z/punch2/jab2_2.png');
+        this.load.image('ls_p2_3', lsPath + 'punches_Z/punch2/jab2_3.png');
+        this.load.image('ls_p2_4', lsPath + 'punches_Z/punch2/jab2_4.png');
+        this.load.image('ls_p2_5', lsPath + 'punches_Z/punch2/jab2_5.png');
+        
+        this.load.image('ls_p3_1', lsPath + 'punches_Z/punch3/heavy_punch_1.png');
+        this.load.image('ls_p3_2', lsPath + 'punches_Z/punch3/heavy_punch_2.png');
+        this.load.image('ls_p3_3', lsPath + 'punches_Z/punch3/heavy_punch_3.png');
+        
+        this.load.image('ls_p4_1', lsPath + 'punches_Z/punch4/body_blow_1.png');
+        this.load.image('ls_p4_2', lsPath + 'punches_Z/punch4/body_blow_2.png');
+        
+        this.load.image('ls_p5_1', lsPath + 'punches_Z/punch5/uppercut1.png');
+        this.load.image('ls_p5_2', lsPath + 'punches_Z/punch5/uppercut2.png');
+        
+        this.load.image('ls_p6_1', lsPath + 'punches_Z/punch6/uppercut2_1.png');
+        this.load.image('ls_p6_2', lsPath + 'punches_Z/punch6/uppercut2_2.png');
+        this.load.image('ls_p6_3', lsPath + 'punches_Z/punch6/uppercut2_3.png');
+        this.load.image('ls_p6_4', lsPath + 'punches_Z/punch6/uppercut2_4.png');
+        this.load.image('ls_p6_5', lsPath + 'punches_Z/punch6/uppercut2_5.png');
+        this.load.image('ls_p6_6', lsPath + 'punches_Z/punch6/uppercut2_6.png');
+        
+        this.load.image('ls_p7_1', lsPath + 'punches_Z/punch7/power_jab_1.png');
+        this.load.image('ls_p7_2', lsPath + 'punches_Z/punch7/power_jab_2.png');
+        this.load.image('ls_p7_3', lsPath + 'punches_Z/punch7/power_jab_3.png');
+        this.load.image('ls_p7_4', lsPath + 'punches_Z/punch7/power_jab_4.png');
+        this.load.image('ls_p7_5', lsPath + 'punches_Z/punch7/power_jab_5.png');
+        
+        this.load.image('ls_p8_1', lsPath + 'punches_Z/punch8/heavy_punch2_1.png');
+        this.load.image('ls_p8_2', lsPath + 'punches_Z/punch8/heavy_punch2_2.png');
+        this.load.image('ls_p8_3', lsPath + 'punches_Z/punch8/heavy_punch2_3.png');
+
+        // X Swords/Strikes
+        this.load.image('ls_x1_1', lsPath + 'sword_attacks_X/strike1/sword.png');
+        this.load.image('ls_x1_2', lsPath + 'sword_attacks_X/strike1/sword1.png');
+        this.load.image('ls_x2_1', lsPath + 'sword_attacks_X/strike2/sword2.png');
+        this.load.image('ls_x2_2', lsPath + 'sword_attacks_X/strike2/sword3.png');
+        this.load.image('ls_x3_1', lsPath + 'sword_attacks_X/strike3/sword4.png');
+        this.load.image('ls_x4_1', lsPath + 'sword_attacks_X/strike4/sword5.png');
+        this.load.image('ls_x4_2', lsPath + 'sword_attacks_X/strike4/sword6.png');
+
+        // C Kicks
+        this.load.image('ls_c1_1', lsPath + 'kicks/kick1/cyborg_kick_combos_000.png');
+        this.load.image('ls_c1_2', lsPath + 'kicks/kick1/cyborg_kick_combos_001.png');
+        this.load.image('ls_c1_3', lsPath + 'kicks/kick1/cyborg_kick_combos_002.png');
+        this.load.image('ls_c2_1', lsPath + 'kicks/kick2/kick2_1.png');
+        this.load.image('ls_c2_2', lsPath + 'kicks/kick2/kick2_2.png');
+        this.load.image('ls_c3_1', lsPath + 'kicks/kick3/kick3_1_idle.png');
+        this.load.image('ls_c3_2', lsPath + 'kicks/kick3/kick3_2.png');
+        this.load.image('ls_c3_3', lsPath + 'kicks/kick3/kick3_3.png');
+        this.load.image('ls_c3_4', lsPath + 'kicks/kick3/kick3_4.png');
+
+        // V Projectile Combo
+        this.load.image('ls_v1_1', lsPath + 'projectiles/blast_combo_C/blast1/small_blast_0.png');
+        this.load.image('ls_v1_2', lsPath + 'projectiles/blast_combo_C/blast1/small_blast_1.png');
+        this.load.image('ls_v1_3', lsPath + 'projectiles/blast_combo_C/blast1/small_blast_2.png');
+        // V Blast 1 projectile frames
+        for (let i = 1; i <= 5; i++) this.load.image(`ls_blast1_proj_${i}`, lsPath + `projectiles/blast_combo_C/blast1/small_blast_projectile${i}.png`);
+        
+        this.load.image('ls_v2_1', lsPath + 'projectiles/blast_combo_C/blast2/blast_beam_0.png');
+        this.load.image('ls_v2_2', lsPath + 'projectiles/blast_combo_C/blast2/blast_beam_1.png');
+        this.load.image('ls_v2_3', lsPath + 'projectiles/blast_combo_C/blast2/blast_beam_2.png');
+        // V Blast 2 projectile frames
+        for (let i = 4; i <= 7; i++) this.load.image(`ls_blast2_proj_${i-3}`, lsPath + `projectiles/blast_combo_C/blast2/blast_beam_${i}_projectile.png`);
+
+        // E Key - Big Energy Beam (blast_E folder)
+        // Character animation frames (blast_00 to blast_05)
+        for (let i = 0; i <= 5; i++) this.load.image(`ls_blast_${i}`, lsPath + `projectiles/blast_E/blast_0${i}.png`);
+        // E projectile frames (charged1 to charged6) - THE ACTUAL PROJECTILE
+        for (let i = 1; i <= 6; i++) this.load.image(`ls_blast3_proj_${i}`, lsPath + `projectiles/blast_E/charged${i}.png`);
+        // Additional E projectile frame (sci-fi mage action)
+        this.load.image('ls_blast3_proj_7', lsPath + 'projectiles/sci_fi_mage_actions_009.png');
+        for (let i = 1; i <= 6; i++) this.load.image(`ls_power_${i}`, lsPath + `power_up/power_up_${i}.png`);
+        for (let i = 1; i <= 4; i++) this.load.image(`ls_shield_${i}`, lsPath + `shield/shield_${i}.png`);
+
+        // Lord Soul Jump Attacks
+        this.load.image('ls_jump_up', lsPath + 'jump/jump_up.png');
+        for (let i = 1; i <= 5; i++) this.load.image(`ls_jump_m_${i}`, lsPath + `jump/jump+movement/jump+move${i}.png`);
+        
+        // Jump Punch Combo (Fixed paths)
+        for (let i = 1; i <= 4; i++) this.load.image(`ls_jp_${i}`, lsPath + `jump_attack/jump_punch_combo/jump_punch${i}.png`);
+        this.load.image('ls_jp_5_proj', lsPath + 'jump_attack/jump_punch_combo/jump_punch5_projectile.png');
+        
+        // Jump Kick
+        for (let i = 1; i <= 6; i++) {
+            let fName = (i === 3) ? 'jump_kick3_hit.png' : `jump_kick${i}.png`;
+            this.load.image(`ls_jk_${i}`, lsPath + `jump_attack/jump_kick/${fName}`);
+        }
+        
+        // Jump Sword
+        this.load.image('ls_js_1', lsPath + 'jump_attack/jump_attack/jump_attack_1.png');
+        this.load.image('ls_js_2', lsPath + 'jump_attack/jump_attack/jump_attack_2.png');
+        this.load.image('ls_js_3', lsPath + 'jump_attack/jump_sword/jump_attack_3.png');
+
+        // Lord Soul Movement Kicks
+        this.load.image('ls_mkick_1', lsPath + 'kicks/movement+kick/mkick1.png');
+        this.load.image('ls_mkick_2', lsPath + 'kicks/movement+kick/mkick2.png');
+        this.load.image('ls_mkick_3', lsPath + 'kicks/movement+kick/mkick3.png');
+
+        // Lord Soul Blast E+Movement
+        this.load.image('ls_bigbeam_1', lsPath + 'projectiles/blast_E+Movement/bigbeam1.png');
+        this.load.image('ls_bigbeam_2', lsPath + 'projectiles/blast_E+Movement/bigbeam2.png');
+        this.load.image('ls_bigbeam_3', lsPath + 'projectiles/blast_E+Movement/bigbeam3.png');
+
+        // Lord Soul Projectile Effects (Warped shooting fx) - REMOVED: Using actual Lord Soul projectiles now
 
         // --- ENEMIES ---
         const enemyRoot = 'assets/images/enemies/';
@@ -375,7 +546,7 @@ class Boot extends Phaser.Scene {
         this.load.image('boss_tex', 'assets/images/enemies/enemy-cyborg.png');
 
         const cyborgFrames = ['001', '002', '004', '005', '006', '007', '008', '009', '010', '011', '012', '013', '014', '015', '017', '020'];
-        cyborgFrames.forEach(f => this.load.image(`cyborg_${f}`, enemyRoot + `cyborg/sprite_${f}.png`));
+        cyborgFrames.forEach(f => this.load.image(`cyborg_${f}`, enemyRoot + `cyborg_enemy/sprite_${f}.png`));
 
         for (let i = 1; i <= 4; i++) this.load.image(`drone${i}`, `new_tilesets/warped_city_files/SPRITES/misc/drone/drone-${i}.png`);
 
@@ -395,12 +566,21 @@ class Boot extends Phaser.Scene {
         this.load.audio('sa', 'assets/sfx/snd_select.ogg');
         this.load.audio('sj', 'assets/sfx/snd_jump.ogg');
         this.load.audio('sh', 'assets/sfx/snd_hurt.ogg');
+        this.load.audio('hit_light', 'assets/sfx/snd_snap.ogg');
+        this.load.audio('hit_medium', 'assets/sfx/snd_landing.ogg');
+        this.load.audio('hit_heavy', 'assets/sfx/snd_explosion_solid.ogg');
         this.load.audio('m1', 'assets/music/Neon Shadows - LEVEL 1.mp3');
         this.load.audio('m2', 'assets/music/Neon Shadows PART 2 LEVEL 2.mp3');
         this.load.audio('mc', 'assets/music/Shadows in the Alley - CUT SCENES.mp3');
         this.load.audio('music_drama', 'assets/music/music_drama_loop.wav');
         this.load.audio('music_aetherion', 'assets/music/music_aetherion_loop.wav');
         this.load.audio('music_khemra', 'assets/music/music_khemra_loop.wav');
+
+        // --- CUSTOM SCENE BGM ---
+        this.load.audio('title_bgm', 'assets/music/Nebula_s_Lament.mp3');
+        this.load.audio('cutscene_bgm', 'assets/music/EA_intro_cutscene_music_1.mp3');
+        this.load.audio('train_bgm', 'assets/music/Neon Shadows PART 2 LEVEL 2.mp3');
+        this.load.audio('boss_bgm', 'assets/music/Nebula_Confrontation.mp3');
     }
 
     create() {
@@ -502,7 +682,7 @@ class Boot extends Phaser.Scene {
             this.anims.create({ key: 'default_idle', frames: [{ key: 'cs_idle' }], frameRate: 8, repeat: -1 });
             this.anims.create({ key: 'default_run', frames: [{ key: 'cs_forward' }], frameRate: 12, repeat: -1 }); // Replaced 8-frame run with forward float
             this.anims.create({ key: 'default_crouch', frames: [{ key: 'cs_crouch' }], frameRate: 1, repeat: 0 });
-            this.anims.create({ key: 'default_hurt', frames: [{ key: 'cs_hurt' }], frameRate: 1, repeat: 0 });
+            this.anims.create({ key: 'default_hurt', frames: [{ key: 'cs_idle' }], frameRate: 1, repeat: 0 });
             this.anims.create({ key: 'default_fall', frames: [{ key: 'cs_jump_up_4' }], frameRate: 1, repeat: -1 });
 
             this.anims.create({ key: 'default_jump', frames: Array.from({ length: 4 }, (_, i) => ({ key: `cs_jump_up_${i + 1}` })), frameRate: 10, repeat: 0 });
@@ -537,7 +717,7 @@ class Boot extends Phaser.Scene {
             this.anims.create({ key: 'bigz_run', frames: [10, 11, 12, 13, 14].map(i => ({ key: `bigz_run_${i}` })), frameRate: 10, repeat: -1 });
             this.anims.create({ key: 'bigz_jump', frames: [{ key: 'bigz_jump_up_1' }, { key: 'bigz_jump_up_2' }, { key: 'bigz_jump_fall_1' }, { key: 'bigz_jump_fall_2' }], frameRate: 8, repeat: 0 });
             this.anims.create({ key: 'bigz_fall', frames: [{ key: 'bigz_jump_fall_1' }, { key: 'bigz_jump_fall_2' }], frameRate: 8, repeat: -1 });
-            this.anims.create({ key: 'bigz_hurt', frames: [{ key: 'bigz_hurt_1' }], frameRate: 1, repeat: 0 });
+            this.anims.create({ key: 'bigz_hurt', frames: [{ key: 'bigz_idle_1' }], frameRate: 1, repeat: 0 });
 
             // Big Z Attacks
             this.anims.create({ key: 'bigz_atk1', frames: [{ key: 'bigz_atk_1' }], frameRate: 12, repeat: 0 });
@@ -555,7 +735,7 @@ class Boot extends Phaser.Scene {
             this.anims.create({ key: 'ignite_run', frames: [{ key: 'ignite_run_1' }, { key: 'ignite_run_2' }, { key: 'ignite_run_3' }], frameRate: 10, repeat: -1 });
             this.anims.create({ key: 'ignite_jump', frames: [{ key: 'ignite_jump_01' }, { key: 'ignite_jump_02' }, { key: 'ignite_jump_03_land' }], frameRate: 8, repeat: 0 });
             this.anims.create({ key: 'ignite_fall', frames: [{ key: 'ignite_jump_01' }], frameRate: 1, repeat: -1 });
-            this.anims.create({ key: 'ignite_hurt', frames: [{ key: 'ignite_hurt_01' }], frameRate: 1, repeat: 0 });
+            this.anims.create({ key: 'ignite_hurt', frames: [{ key: 'ignite_idle_01' }], frameRate: 1, repeat: 0 });
 
             // Combo chain (4 hits)
             this.anims.create({ key: 'ignite_atk1', frames: [{ key: 'ignite_combo_0' }, { key: 'ignite_combo_01' }, { key: 'ignite_combo_02' }, { key: 'ignite_combo_03_hit' }], frameRate: 12, repeat: 0 });
@@ -573,7 +753,10 @@ class Boot extends Phaser.Scene {
             this.anims.create({ key: 'ninja_run', frames: Array.from({ length: 8 }, (_, i) => ({ key: `cn_run_${i}` })), frameRate: 12, repeat: -1 });
             this.anims.create({ key: 'ninja_jump', frames: Array.from({ length: 5 }, (_, i) => ({ key: `cn_jump_${i}` })), frameRate: 10, repeat: 0 });
             this.anims.create({ key: 'ninja_fall', frames: [{ key: 'cn_jump_4' }], frameRate: 1, repeat: -1 });
-            this.anims.create({ key: 'ninja_hurt', frames: [{ key: 'cn_hurt_0' }], frameRate: 1, repeat: 0 });
+            this.anims.create({ key: 'ninja_hurt', frames: Array.from({ length: 5 }, (_, i) => ({ key: `cn_hurt_${i}` })), frameRate: 10, repeat: 0 });
+            this.anims.create({ key: 'ninja_crouch', frames: [{ key: 'cn_crouch_0' }, { key: 'cn_crouch_1' }], frameRate: 6, repeat: 0 });
+            this.anims.create({ key: 'ninja_dash', frames: Array.from({ length: 4 }, (_, i) => ({ key: `cn_dash_${i}` })), frameRate: 12, repeat: 0 });
+            this.anims.create({ key: 'ninja_blast', frames: Array.from({ length: 3 }, (_, i) => ({ key: `cn_blast_${i}` })), frameRate: 10, repeat: 0 });
             // 4-hit melee combo
             // Sword combo attacks (replacing melee)
             this.anims.create({ key: 'ninja_atk1', frames: [{ key: 'cn_sw1_1' }, { key: 'cn_sw1_2' }, { key: 'cn_sw1_3' }], frameRate: 16, repeat: 0 });
@@ -583,17 +766,99 @@ class Boot extends Phaser.Scene {
             // Somersault double-jump
             this.anims.create({ key: 'ninja_jump_double', frames: [{ key: 'cn_som_1' }, { key: 'cn_som_2' }, { key: 'cn_som_3' }, { key: 'cn_som_4' }], frameRate: 12, repeat: 0 });
 
+            // --- LORD SOUL (naga-soul-26) ---
+            this.anims.create({ key: 'lordsoul_idle', frames: [{ key: 'ls_idle' }], frameRate: 6, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_walk', frames: Array.from({ length: 6 }, (_, i) => ({ key: `ls_walk_${i + 1}` })), frameRate: 8, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_move', frames: [{ key: 'ls_move' }], frameRate: 6, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_run', frames: Array.from({ length: 8 }, (_, i) => ({ key: `ls_run_${i + 7}` })), frameRate: 14, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_dash_aura', frames: Array.from({ length: 8 }, (_, i) => ({ key: `ls_dash_aura_${i + 1}` })), frameRate: 16, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_fly', frames: Array.from({ length: 6 }, (_, i) => ({ key: `ls_fly_${i + 1}` })), frameRate: 12, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_hover', frames: [{ key: 'ls_hover_1' }, { key: 'ls_hover_2' }, { key: 'ls_hover_3' }], frameRate: 10, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_jump', frames: [{ key: 'ls_jump_up' }], frameRate: 1, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_jump_forward', frames: [{ key: 'ls_jump_up' }], frameRate: 1, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_fall', frames: [{ key: 'ls_jump_up' }], frameRate: 1, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_hurt', frames: [{ key: 'ls_hit1_1' }, { key: 'ls_hit1_2' }], frameRate: 10, repeat: 0 });
+
+            // 8-Hit Z Punches Combo - Streets of Rage 2 / Street Fighter 2 timing
+            // Light jabs (Ultra snappy)
+            this.anims.create({ key: 'lordsoul_atk1', frames: [{ key: 'ls_p1_1' }, { key: 'ls_p1_2', duration: 80 }], frameRate: 24, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_atk2', frames: [{ key: 'ls_p2_1' }, { key: 'ls_p2_2' }, { key: 'ls_p2_3', duration: 100 }, { key: 'ls_p2_4' }, { key: 'ls_p2_5' }], frameRate: 22, repeat: 0 });
+            
+            // Medium strikes
+            this.anims.create({ key: 'lordsoul_atk3', frames: [{ key: 'ls_p3_1' }, { key: 'ls_p3_2' }, { key: 'ls_p3_3', duration: 150 }], frameRate: 18, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_atk4', frames: [{ key: 'ls_p4_1' }, { key: 'ls_p4_2', duration: 150 }], frameRate: 16, repeat: 0 });
+            
+            // Heavy uppercuts (Wind-up on frame 1)
+            this.anims.create({ key: 'lordsoul_atk5', frames: [{ key: 'ls_p5_1', duration: 120 }, { key: 'ls_p5_2', duration: 200 }], frameRate: 14, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_atk6', frames: [{ key: 'ls_p6_1', duration: 100 }, { key: 'ls_p6_2' }, { key: 'ls_p6_3' }, { key: 'ls_p6_4' }, { key: 'ls_p6_5' }, { key: 'ls_p6_6', duration: 200 }], frameRate: 20, repeat: 0 });
+            
+            // Power combos / Finishers (Impact and Force)
+            this.anims.create({ key: 'lordsoul_atk7', frames: [{ key: 'ls_p7_1' }, { key: 'ls_p7_2' }, { key: 'ls_p7_3' }, { key: 'ls_p7_4', duration: 150 }, { key: 'ls_p7_5', duration: 250 }], frameRate: 20, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_atk8', frames: [{ key: 'ls_p8_1', duration: 100 }, { key: 'ls_p8_2' }, { key: 'ls_p8_3', duration: 400 }], frameRate: 16, repeat: 0 });
+
+            // 4-Hit X Sword Combo
+            this.anims.create({ key: 'lordsoul_sw1', frames: [{ key: 'ls_x1_1' }, { key: 'ls_x1_2', duration: 150 }], frameRate: 16, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_sw2', frames: [{ key: 'ls_x2_1' }, { key: 'ls_x2_2', duration: 150 }], frameRate: 16, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_sw3', frames: [{ key: 'ls_x3_1', duration: 200 }], frameRate: 12, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_sw4', frames: [{ key: 'ls_x4_1' }, { key: 'ls_x4_2', duration: 300 }], frameRate: 14, repeat: 0 });
+
+            // C Kicks - Faster, snappy leg attacks
+            this.anims.create({ key: 'lordsoul_kick1', frames: [{ key: 'ls_c1_1' }, { key: 'ls_c1_2' }, { key: 'ls_c1_3', duration: 120 }], frameRate: 22, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_kick2', frames: [{ key: 'ls_c2_1' }, { key: 'ls_c2_2', duration: 150 }], frameRate: 22, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_kick3', frames: [{ key: 'ls_c3_1' }, { key: 'ls_c3_2' }, { key: 'ls_c3_3' }, { key: 'ls_c3_4', duration: 200 }], frameRate: 18, repeat: 0 });
+
+            // V Key - Energy Blast Combo (2 hits, then E is separate big beam)
+            this.anims.create({ key: 'lordsoul_blast1', frames: [{ key: 'ls_v1_1' }, { key: 'ls_v1_2' }, { key: 'ls_v1_3', duration: 120 }], frameRate: 18, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_blast2', frames: [{ key: 'ls_v2_1' }, { key: 'ls_v2_2' }, { key: 'ls_v2_3', duration: 180 }], frameRate: 16, repeat: 0 });
+            
+            // E Key - Big Energy Beam (separate from V combo)
+            this.anims.create({ key: 'lordsoul_blast3', frames: [{ key: 'ls_blast_0' }, { key: 'ls_blast_1' }, { key: 'ls_blast_2' }, { key: 'ls_blast_3' }, { key: 'ls_blast_4' }, { key: 'ls_blast_5', duration: 250 }], frameRate: 18, repeat: 0 });
+
+            // Lord Soul Projectiles (animated sprites)
+            this.anims.create({ key: 'lordsoul_blast1_proj', frames: Array.from({ length: 5 }, (_, i) => ({ key: `ls_blast1_proj_${i + 1}` })), frameRate: 20, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_blast2_proj', frames: Array.from({ length: 4 }, (_, i) => ({ key: `ls_blast2_proj_${i + 1}` })), frameRate: 18, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_blast3_proj', frames: Array.from({ length: 7 }, (_, i) => ({ key: `ls_blast3_proj_${i + 1}` })), frameRate: 16, repeat: -1 }); // E beam: charged1-6 + sci-fi swirl
+
+            this.anims.create({ key: 'lordsoul_powerup', frames: [{ key: 'ls_power_1' }, { key: 'ls_power_2' }, { key: 'ls_power_3' }, { key: 'ls_power_4' }, { key: 'ls_power_5' }, { key: 'ls_power_6' }], frameRate: 12, repeat: -1 });
+
+            // Lord Soul Jump Attacks
+            // Jump Punch Combo - Split for manual chaining (1 press = 1 hit)
+            this.anims.create({ key: 'lordsoul_jump_atk1', frames: [{ key: 'ls_jp_1' }], frameRate: 20, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_jump_atk2', frames: [{ key: 'ls_jp_2' }], frameRate: 20, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_jump_atk3', frames: [{ key: 'ls_jp_3' }], frameRate: 20, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_jump_atk4', frames: [{ key: 'ls_jp_4' }], frameRate: 20, repeat: 0 });
+            this.anims.create({ key: 'lordsoul_jump_atk5', frames: [{ key: 'ls_jp_5_proj' }], frameRate: 20, repeat: 0 });
+
+            // Jump Kick (6 frames)
+            this.anims.create({ key: 'lordsoul_jump_kick', frames: [{ key: 'ls_jk_1' }, { key: 'ls_jk_2' }, { key: 'ls_jk_3', duration: 200 }, { key: 'ls_jk_4' }, { key: 'ls_jk_5' }, { key: 'ls_jk_6' }], frameRate: 15, repeat: 0 });
+            // Jump Sword (3 frames)
+            this.anims.create({ key: 'lordsoul_jump_sword', frames: [{ key: 'ls_js_1' }, { key: 'ls_js_2', duration: 150 }, { key: 'ls_js_3', duration: 200 }], frameRate: 12, repeat: 0 });
+
+            // Lord Soul Movement Kicks
+            this.anims.create({ key: 'lordsoul_mkick', frames: [{ key: 'ls_mkick_1' }, { key: 'ls_mkick_2' }, { key: 'ls_mkick_3' }], frameRate: 12, repeat: 0 });
+
+            // Lord Soul Big Beam (E+Movement)
+            this.anims.create({ key: 'lordsoul_bigbeam', frames: [{ key: 'ls_bigbeam_1' }, { key: 'ls_bigbeam_2' }, { key: 'ls_bigbeam_3' }], frameRate: 10, repeat: -1 });
+            this.anims.create({ key: 'lordsoul_shield', frames: [{ key: 'ls_shield_1' }, { key: 'ls_shield_2' }, { key: 'ls_shield_3' }, { key: 'ls_shield_4' }], frameRate: 12, repeat: -1 });
 
             // Enemy Anims
             const wIT = this.textures.get('walker_i');
             if (wIT && wIT.key !== '__MISSING') {
-                for (let i = 0; i < 4; i++) wIT.add(`f${i}`, 0, i * 48, 0, 48, 48);
-                this.anims.create({ key: 'walker_idle', frames: Array.from({ length: 4 }, (_, i) => ({ key: 'walker_i', frame: `f${i}` })), frameRate: 8, repeat: -1 });
+                for (let i = 0; i < 4; i++) {
+                    if (!wIT.has(`f${i}`)) wIT.add(`f${i}`, 0, i * 48, 0, 48, 48);
+                }
+                if (!this.anims.exists('walker_idle')) {
+                    this.anims.create({ key: 'walker_idle', frames: Array.from({ length: 4 }, (_, i) => ({ key: 'walker_i', frame: `f${i}` })), frameRate: 8, repeat: -1 });
+                }
             }
             const wWT = this.textures.get('walker_w');
             if (wWT && wWT.key !== '__MISSING') {
-                for (let i = 0; i < 6; i++) wWT.add(`f${i}`, 0, i * 57, 0, 57, 42);
-                this.anims.create({ key: 'walker_walk', frames: Array.from({ length: 6 }, (_, i) => ({ key: 'walker_w', frame: `f${i}` })), frameRate: 10, repeat: -1 });
+                for (let i = 0; i < 6; i++) {
+                    if (!wWT.has(`f${i}`)) wWT.add(`f${i}`, 0, i * 57, 0, 57, 42);
+                }
+                if (!this.anims.exists('walker_walk')) {
+                    this.anims.create({ key: 'walker_walk', frames: Array.from({ length: 6 }, (_, i) => ({ key: 'walker_w', frame: `f${i}` })), frameRate: 10, repeat: -1 });
+                }
             }
             this.anims.create({ key: 'drone_fly', frames: [{ key: 'drone1' }, { key: 'drone2' }, { key: 'drone3' }, { key: 'drone4' }], frameRate: 10, repeat: -1 });
 
@@ -623,7 +888,7 @@ class Boot extends Phaser.Scene {
                 'bigz': { health: 10, power: 10, speed: 3 },
                 'ignite': { health: 6, power: 9, speed: 8 },
                 'ninja': { name: 'NAGA SOUL', health: 6, power: 8, speed: 10 },
-                'cro': { health: 9, power: 8, speed: 7 },
+                'lordsoul': { health: 9, power: 8, speed: 7 },
                 'default': { health: 7, power: 7, speed: 7 }
             });
 

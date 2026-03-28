@@ -10,6 +10,9 @@ class ModeSelectScene extends Phaser.Scene {
     create() {
         console.log("MODE_SELECT: Initializing v17.0 (New Space Branding)");
 
+        this.sound.stopAll();
+        this.sound.play('title_bgm', { loop: true, volume: 0.6 });
+
         // Add background and scale proportionally to cover the screen (like CSS cover)
         const bg = this.add.image(480, 270, 'title_bg_v17');
         const scaleX = this.cameras.main.width / bg.width;

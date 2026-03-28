@@ -1,0 +1,8 @@
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_00.mp4'
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_01.mp4'
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_02.mp4'
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_03.mp4'
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_04.mp4'
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_05.mp4'
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_06.mp4'
+file '/Users/nagavision/Ethical_Avengers_V3/lore/STORYBOARD-INTRO/arcade_intro/clips/trimmed_07.mp4'

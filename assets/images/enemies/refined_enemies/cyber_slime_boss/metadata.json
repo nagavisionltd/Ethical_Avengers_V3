@@ -1,0 +1,34 @@
+[
+  {
+    "id": 0,
+    "file": "frame_000.png",
+    "x": 14,
+    "y": 17,
+    "width": 88,
+    "height": 59
+  },
+  {
+    "id": 1,
+    "file": "frame_001.png",
+    "x": 131,
+    "y": 19,
+    "width": 89,
+    "height": 57
+  },
+  {
+    "id": 2,
+    "file": "frame_002.png",
+    "x": 366,
+    "y": 18,
+    "width": 93,
+    "height": 58
+  },
+  {
+    "id": 3,
+    "file": "frame_003.png",
+    "x": 248,
+    "y": 22,
+    "width": 94,
+    "height": 54
+  }
+]

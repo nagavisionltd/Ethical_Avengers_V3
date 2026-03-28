@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Jump Challenge</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: monospace;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            color: #00ffaa;
+            font-size: 14px;
+            text-align: center;
+        }
+        #info strong { color: #ff3366; }
+        canvas { border: 3px solid #00ffaa; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <strong>ARROW KEYS</strong> - Move | <strong>SPACE</strong> - Jump | <strong>⚠️ DON'T FALL!</strong>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 450,
+            backgroundColor: '#0d0d1a',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 1000 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        const game = new Phaser.Game(config);
+
+        let player;
+        let cursors;
+        let keySpace;
+        let platforms;
+        let currentCheckpoint = { x: 100, y: 350 };
+        let deaths = 0;
+        let levelComplete = false;
+
+        function preload() {
+            const graphics = this.make.graphics();
+
+            // Ground/start platform
+            graphics.fillStyle(0x00ffaa, 1);
+            graphics.fillRect(0, 0, 32, 32);
+            graphics.fillStyle(0x66ffcc, 1);
+            graphics.fillRect(4, 4, 24, 24);
+            graphics.generateTexture('start-platform', 32, 32);
+
+            // Small platform (1 tile)
+            graphics.clear();
+            graphics.fillStyle(0x6633cc, 1);
+            graphics.fillRect(0, 0, 32, 16);
+            graphics.fillStyle(0x9966ff, 1);
+            graphics.fillRect(2, 2, 28, 12);
+            graphics.generateTexture('platform-small', 32, 16);
+
+            // Medium platform (2 tiles)
+            graphics.clear();
+            graphics.fillStyle(0x6633cc, 1);
+            graphics.fillRect(0, 0, 64, 16);
+            graphics.fillStyle(0x9966ff, 1);
+            graphics.fillRect(2, 2, 60, 12);
+            graphics.generateTexture('platform-medium', 64, 16);
+
+            // Long platform (4 tiles)
+            graphics.clear();
+            graphics.fillStyle(0x6633cc, 1);
+            graphics.fillRect(0, 0, 128, 16);
+            graphics.fillStyle(0x9966ff, 1);
+            graphics.fillRect(2, 2, 124, 12);
+            graphics.generateTexture('platform-long', 128, 16);
+
+            // Moving platform
+            graphics.clear();
+            graphics.fillStyle(0xff6633, 1);
+            graphics.fillRect(0, 0, 48, 16);
+            graphics.fillStyle(0xff9966, 1);
+            graphics.fillRect(2, 2, 44, 12);
+            graphics.generateTexture('platform-moving', 48, 16);
+
+            // Crumbling platform
+            graphics.clear();
+            graphics.fillStyle(0x666666, 1);
+            graphics.fillRect(0, 0, 32, 16);
+            graphics.fillStyle(0x999999, 1);
+            graphics.fillRect(2, 2, 28, 12);
+            graphics.generateTexture('platform-crumble', 32, 16);
+
+            // Bouncy platform
+            graphics.clear();
+            graphics.fillStyle(0x33cc33, 1);
+            graphics.fillRect(0, 0, 32, 16);
+            graphics.fillStyle(0x66ff66, 1);
+            graphics.fillRect(2, 2, 28, 12);
+            graphics.generateTexture('platform-bouncy', 32, 16);
+
+            // Player (Lord Soul colors)
+            graphics.clear();
+            graphics.fillStyle(0x6633cc, 1);
+            graphics.fillRect(0, 0, 28, 42);
+            graphics.fillStyle(0x00ffaa, 1);
+            graphics.fillRect(6, 10, 16, 8);
+            graphics.generateTexture('player', 28, 42);
+
+            // Checkpoint flag
+            graphics.clear();
+            graphics.fillStyle(0x00ffaa, 1);
+            graphics.fillRect(0, 0, 8, 40);
+            graphics.fillStyle(0xffff00, 1);
+            graphics.fillTriangle(8, 0, 8, 20, 28, 10);
+            graphics.generateTexture('checkpoint', 32, 48);
+
+            // Death zone (spikes)
+            graphics.clear();
+            graphics.fillStyle(0xff0044, 1);
+            for (let i = 0; i < 16; i++) {
+                graphics.fillTriangle(i * 32, 450, i * 32 + 16, 400, i * 32 + 32, 450);
+            }
+            graphics.generateTexture('death-spikes', 512, 50);
+
+            // Goal
+            graphics.clear();
+            graphics.fillStyle(0x00ffaa, 1);
+            graphics.fillRect(0, 0, 40, 80);
+            graphics.fillStyle(0xffffff, 1);
+            graphics.fillRect(10, 10, 20, 60);
+            graphics.fillStyle(0xffff00, 1);
+            graphics.fillCircle(20, 20, 8);
+            graphics.generateTexture('goal', 40, 80);
+
+            // Particle
+            graphics.clear();
+            graphics.fillStyle(0x00ffaa, 1);
+            graphics.fillRect(0, 0, 8, 8);
+            graphics.generateTexture('particle', 8, 8);
+        }
+
+        function create() {
+            // Platform groups
+            platforms = this.physics.add.staticGroup();
+            this.crumblePlatforms = this.physics.add.staticGroup();
+            this.bouncyPlatforms = this.physics.add.group();
+            this.movingPlatforms = this.physics.add.group();
+
+            // Death zone at bottom
+            this.deathZone = this.add.tileSprite(1600, 475, 3200, 50, 'death-spikes');
+            this.deathZone.setOrigin(0.5);
+
+            // === LEVEL DESIGN ===
+            // Start platform (safe)
+            platforms.create(100, 400, 'start-platform');
+            platforms.create(68, 400, 'start-platform');
+            platforms.create(132, 400, 'start-platform');
+
+            // Checkpoint 1
+            this.createCheckpoint(200, 350);
+
+            // Section 1: Basic jumps (teaching)
+            platforms.create(300, 380, 'platform-small');
+            platforms.create(400, 360, 'platform-small');
+            platforms.create(500, 340, 'platform-small');
+            platforms.create(600, 320, 'platform-medium');
+
+            // Checkpoint 2
+            this.createCheckpoint(650, 270);
+
+            // Section 2: Gap jumps
+            platforms.create(780, 300, 'platform-small');
+            platforms.create(900, 280, 'platform-small');
+            platforms.create(1020, 260, 'platform-small');
+            platforms.create(1140, 240, 'platform-medium');
+
+            // Checkpoint 3
+            this.createCheckpoint(1200, 190);
+
+            // Section 3: Vertical climb
+            platforms.create(1350, 250, 'platform-small');
+            platforms.create(1450, 200, 'platform-small');
+            platforms.create(1550, 150, 'platform-small');
+            platforms.create(1650, 100, 'platform-medium');
+
+            // Checkpoint 4
+            this.createCheckpoint(1700, 50);
+
+            // Section 4: Moving platforms
+            const move1 = this.movingPlatforms.create(1850, 150, 'platform-moving');
+            move1.startX = 1850;
+            move1.endX = 1950;
+            move1.speed = 100;
+            move1.direction = 1;
+
+            const move2 = this.movingPlatforms.create(2050, 200, 'platform-moving');
+            move2.startX = 2050;
+            move2.endX = 2150;
+            move2.speed = 120;
+            move2.direction = 1;
+
+            platforms.create(2250, 180, 'platform-medium');
+
+            // Checkpoint 5
+            this.createCheckpoint(2350, 130);
+
+            // Section 5: Crumbling platforms (fall through!)
+            this.crumblePlatforms.create(2500, 200, 'platform-crumble');
+            this.crumblePlatforms.create(2600, 220, 'platform-crumble');
+            this.crumblePlatforms.create(2700, 240, 'platform-crumble');
+            this.crumblePlatforms.create(2800, 260, 'platform-crumble');
+
+            platforms.create(2900, 240, 'platform-medium');
+
+            // Checkpoint 6
+            this.createCheckpoint(2950, 190);
+
+            // Section 6: Bouncy platforms
+            this.bouncyPlatforms.create(3100, 280, 'platform-bouncy');
+            this.bouncyPlatforms.create(3250, 320, 'platform-bouncy');
+            this.bouncyPlatforms.create(3400, 280, 'platform-bouncy');
+            platforms.create(3550, 240, 'platform-long');
+
+            // Section 7: Precision jumps (tiny platforms)
+            platforms.create(3700, 200, 'platform-small');
+            platforms.create(3820, 180, 'platform-small');
+            platforms.create(3940, 160, 'platform-small');
+            platforms.create(4060, 140, 'platform-small');
+            platforms.create(4180, 120, 'platform-medium');
+
+            // Checkpoint 7
+            this.createCheckpoint(4250, 70);
+
+            // Section 8: The gauntlet (long jumps)
+            platforms.create(4400, 150, 'platform-small');
+            platforms.create(4550, 180, 'platform-small');
+            platforms.create(4700, 150, 'platform-small');
+            platforms.create(4850, 180, 'platform-small');
+            platforms.create(5000, 150, 'platform-medium');
+
+            // Section 9: Final climb
+            platforms.create(5150, 100, 'platform-small');
+            platforms.create(5250, 50, 'platform-small');
+            platforms.create(5350, 100, 'platform-small');
+            platforms.create(5450, 150, 'platform-small');
+
+            // GOAL!
+            const goal = platforms.create(5550, 120, 'goal');
+            goal.body.allowGravity = false;
+            this.goal = goal;
+
+            // Player
+            player = this.physics.add.sprite(100, 350, 'player');
+            player.setCollideWorldBounds(false);
+            player.setDragX(500);
+            player.setMaxVelocity(350, 600);
+
+            // Collisions
+            this.physics.add.collider(player, platforms);
+            this.physics.add.collider(player, this.movingPlatforms);
+            this.physics.add.collider(player, this.bouncyPlatforms, this.hitBouncy, null, this);
+            this.physics.add.collider(player, this.crumblePlatforms, this.hitCrumble, null, this);
+            this.physics.add.overlap(player, this.goal, this.reachGoal, null, this);
+
+            // Camera
+            this.cameras.main.startFollow(player, true, 0.08, 0.08);
+            this.cameras.main.setBounds(0, 0, 5700, 450);
+            this.physics.world.setBounds(0, 0, 5700, 450);
+
+            // Input
+            cursors = this.input.keyboard.createCursorKeys();
+            keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+            // HUD
+            this.deathText = this.add.text(20, 20, 'DEATHS: 0', {
+                fontFamily: 'monospace',
+                fontSize: '18px',
+                color: '#ff3366'
+            }).setScrollFactor(0);
+
+            this.checkpointText = this.add.text(20, 45, 'CHECKPOINT: 1/7', {
+                fontFamily: 'monospace',
+                fontSize: '14px',
+                color: '#00ffaa'
+            }).setScrollFactor(0);
+
+            this.jumpText = this.add.text(780, 20, 'JUMPS: 0', {
+                fontFamily: 'monospace',
+                fontSize: '16px',
+                color: '#ffffff'
+            }).setScrollFactor(0).setOrigin(1, 0);
+
+            this.jumpCount = 0;
+            this.currentCheckpointNum = 0;
+            this.totalCheckpoints = 7;
+
+            // Instructions
+            this.showInstruction('Reach the GREEN GOAL!');
+            this.time.delayedCall(2000, () => {
+                this.showInstruction('Don\'t fall into the spikes!');
+            });
+        }
+
+        function update(time, delta) {
+            if (levelComplete) return;
+
+            // Movement
+            const speed = 400;
+
+            if (cursors.left.isDown) {
+                player.setVelocityX(-speed);
+                player.setFlipX(true);
+            } else if (cursors.right.isDown) {
+                player.setVelocityX(speed);
+                player.setFlipX(false);
+            } else {
+                player.setVelocityX(0);
+            }
+
+            // Jump
+            if (Phaser.Input.Keyboard.JustDown(keySpace)) {
+                if (player.body.touching.down) {
+                    player.setVelocityY(-650);
+                    this.jumpCount++;
+                    this.jumpText.setText(`JUMPS: ${this.jumpCount}`);
+                    this.createJumpParticles(player.x, player.y + 21);
+                }
+            }
+
+            // Update moving platforms
+            this.movingPlatforms.getChildren().forEach(platform => {
+                platform.x += platform.speed * platform.direction * delta;
+                if (platform.x >= platform.endX || platform.x <= platform.startX) {
+                    platform.direction *= -1;
+                }
+            });
+
+            // Check death (fell)
+            if (player.y > 440) {
+                this.die();
+            }
+        }
+
+        function createCheckpoint(x, y) {
+            const flag = this.add.sprite(x, y - 24, 'checkpoint');
+            flag.body.allowGravity = false;
+            flag.checkpointX = x;
+            flag.checkpointY = y;
+            flag.active = true;
+
+            this.physics.add.overlap(player, flag, (p, f) => {
+                if (!f.active) return;
+                f.active = false;
+                f.setTint(0x666666);
+                
+                currentCheckpoint = { x: f.checkpointX, y: f.checkpointY };
+                this.currentCheckpointNum++;
+                this.checkpointText.setText(`CHECKPOINT: ${this.currentCheckpointNum}/${this.totalCheckpoints}`);
+                
+                this.showFloatingText('✓ CHECKPOINT!', p.x, p.y - 30, '#00ffaa');
+                this.createParticles(p.x, p.y, 0x00ffaa, 10);
+            });
+        }
+
+        function hitBouncy(player, platform) {
+            player.setVelocityY(-800);
+            this.createParticles(platform.x, platform.y - 8, 0x33ff33, 8);
+        }
+
+        function hitCrumble(player, platform) {
+            if (platform.crumbling) return;
+            
+            platform.crumbling = true;
+            
+            // Shake effect
+            this.tweens.add({
+                targets: platform,
+                x: platform.x + 2,
+                duration: 50,
+                yoyo: true,
+                repeat: 3
+            });
+
+            // Fall after delay
+            this.time.delayedCall(500, () => {
+                this.physics.moveTo(platform, platform.x, 600, 200);
+                platform.body.allowGravity = true;
+                this.createParticles(platform.x, platform.y, 0x999999, 6);
+            });
+        }
+
+        function die() {
+            deaths++;
+            this.deathText.setText(`DEATHS: ${deaths}`);
+            
+            // Death effect
+            this.createParticles(player.x, player.y, 0xff0044, 20);
+            this.showFloatingText('💀', player.x, player.y - 30, '#ff0044');
+            
+            // Respawn at checkpoint
+            this.time.delayedCall(500, () => {
+                player.x = currentCheckpoint.x;
+                player.y = currentCheckpoint.y;
+                player.setVelocity(0, 0);
+            });
+        }
+
+        function reachGoal(player, goal) {
+            if (levelComplete) return;
+            levelComplete = true;
+
+            this.showFloatingText('🎉 LEVEL COMPLETE! 🎉', player.x, player.y - 50, '#00ffaa');
+            this.showFloatingText(`Jumps: ${this.jumpCount}`, player.x, player.y - 80, '#ffff00');
+            this.showFloatingText(`Deaths: ${deaths}`, player.x, player.y - 110, '#ff3366');
+
+            // Victory particles
+            this.time.addEvent({
+                delay: 100,
+                repeat: 20,
+                callback: () => {
+                    this.createParticles(
+                        player.x + (Math.random() - 0.5) * 100,
+                        player.y + (Math.random() - 0.5) * 100,
+                        0x00ffaa,
+                        3
+                    );
+                }
+            });
+
+            // Restart after 4 seconds
+            this.time.delayedCall(4000, () => {
+                this.scene.restart();
+            });
+        }
+
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                const particle = this.add.particle(x, y, 'particle', {
+                    speed: { min: 50, max: 150 },
+                    angle: { min: 0, max: 360 },
+                    scale: { start: 1, end: 0 },
+                    lifespan: 500,
+                    tint: color,
+                    blendMode: 'ADD'
+                });
+                this.time.delayedCall(500, () => particle.destroy());
+            }
+        }
+
+        function createJumpParticles(x, y) {
+            for (let i = 0; i < 5; i++) {
+                const particle = this.add.particle(x, y, 'particle', {
+                    speed: { min: 30, max: 80 },
+                    angle: { min: 180, max: 360 },
+                    scale: { start: 0.8, end: 0 },
+                    lifespan: 300,
+                    tint: 0x00ffaa
+                });
+                this.time.delayedCall(300, () => particle.destroy());
+            }
+        }
+
+        function showInstruction(text) {
+            const instr = this.add.text(400, 100, text, {
+                fontFamily: 'monospace',
+                fontSize: '20px',
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 4
+            }).setOrigin(0.5);
+
+            this.tweens.add({
+                targets: instr,
+                alpha: 0,
+                duration: 2000,
+                delay: 1000,
+                onComplete: () => instr.destroy()
+            });
+        }
+
+        function showFloatingText(text, x, y, color) {
+            const floatText = this.add.text(x, y, text, {
+                fontFamily: 'monospace',
+                fontSize: '24px',
+                color: color || '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 4
+            }).setOrigin(0.5);
+
+            this.tweens.add({
+                targets: floatText,
+                y: y - 80,
+                alpha: 0,
+                duration: 1500,
+                onComplete: () => floatText.destroy()
+            });
+        }
+    </script>
+</body>
+</html>

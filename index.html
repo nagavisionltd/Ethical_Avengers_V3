@@ -31,11 +31,14 @@
 
 <body>
     <div id="game-container"></div>
-    <script src="src/Config.js?v=16.4.3"></script>
+    <script src="src/Config.js?v=16.5.1"></script>
     <script src="src/Dialogue.js?v=16.8.3"></script>
-    <script src="src/entities/NeoPlayer_v16.js?v=16.20.1"></script>
-    <script src="src/scenes/BaseScene.js?v=16.13.4"></script>
-    <script src="src/scenes/Boot_v16.js?v=16.14.3"></script>
+    <script src="src/systems/CombatFeedback.js?v=17.0.0"></script>
+    <script src="src/systems/RPGSystem.js?v=17.0.0"></script>
+    <script src="src/entities/Enemy.js?v=17.0.0"></script>
+    <script src="src/entities/NeoPlayer_v16.js?v=16.24.0"></script>
+    <script src="src/scenes/BaseScene.js?v=17.10.1"></script>
+    <script src="src/scenes/Boot_v16.js?v=16.16.2"></script>
     <script src="src/scenes/UIScene.js?v=16.9.1"></script>
     <script src="src/scenes/ModeSelectScene.js?v=16.4.1"></script>
     <script src="src/scenes/CharacterSelectScene.js?v=16.9.0"></script>
@@ -46,25 +49,8 @@
     <script src="src/scenes/DialogueScene.js?v=16.11.1"></script>
     <script src="src/scenes/StageTitleScene.js?v=16.4.1"></script>
     <script src="src/scenes/VideoIntroScene.js?v=1.0.0"></script>
-    <script src="src/scenes/Level1_Antarctica.js?v=17.1.0"></script>
-    <script src="src/scenes/Level1_Hoverboard.js?v=16.4.1"></script>
-    <script src="src/scenes/Level1_IceWall.js?v=16.4.1"></script>
-    <script src="src/scenes/Cutscene_IceWall.js?v=16.4.1"></script>
-    <script src="src/scenes/TravelCutscene.js?v=16.4.1"></script>
-    <script src="src/scenes/MainScene.js?v=16.4.1"></script>
-    <script src="src/scenes/KhemraScene.js?v=16.4.1"></script>
-    <script src="src/scenes/LabScene.js?v=16.4.1"></script>
-    <script src="src/scenes/BossFightScene.js?v=16.4.1"></script>
-    <script src="src/scenes/UmbraPrimeScene.js?v=16.4.1"></script>
-    <script src="src/scenes/VSCharacterSelectScene.js?v=16.4.1"></script>
-    <script src="src/scenes/VSLevelSelectScene.js?v=16.4.1"></script>
-    <script src="src/scenes/VSArenaScene.js?v=16.4.1"></script>
-    <script src="src/scenes/Level_ShippingDocks.js?v=16.4.1"></script>
-    <script src="src/scenes/Level2_CrystalHub.js?v=16.4.1"></script>
-    <script src="src/scenes/AetherionScene.js?v=16.4.1"></script>
-    <script src="src/scenes/JunkPlainsScene.js?v=16.11.1"></script>
-    <script src="src/scenes/GenericTilemapScene.js?v=17.11"></script>
-    <script src="src/scenes/TerraPrimeScene.js?v=16.4.1"></script>
+    <script src="src/scenes/Level1_Antarctica.js?v=17.10.4"></script>
+    <script src="src/scenes/GenericTilemapScene.js?v=17.13"></script>
 
     <script>
         console.log("%c ETHICAL AVENGERS V3 - VERSION 17.0.0 - ARCADE CHAIN BUILD ", "background: #00ff00; color: #000; font-weight: bold;");
@@ -73,16 +59,12 @@
             transparent: true,
             scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
             dom: { createContainer: true },
-            physics: { default: 'arcade', arcade: { gravity: { y: 900 }, fixedStep: true, fps: 120, debug: false } },
+            physics: { default: 'arcade', arcade: { gravity: { y: 1200 }, fixedStep: true, fps: 120, debug: true } },
             scene: [
                 Boot, VideoIntroScene, ModeSelectScene, CharacterSelectScene, WorldSelectScene,
                 UpgradeScene,
                 IntroScene, DialogueScene, StageTitleScene, Level1_Antarctica,
-                Level1_Hoverboard, Cutscene_IceWall, Level1_IceWall, TravelCutscene,
-                MainScene, KhemraScene, LabScene, BossFightScene, UmbraPrimeScene,
-                VSCharacterSelectScene, VSLevelSelectScene, VSArenaScene,
-                Level_ShippingDocks, Level2_CrystalHub, AetherionScene, TerraPrimeScene,
-                JunkPlainsScene, GenericTilemapScene, UIScene, GameOverScene
+                GenericTilemapScene, UIScene, GameOverScene
             ]
         });
     </script>

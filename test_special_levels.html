@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethical Avengers V3 - Special Levels Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Press Start 2P', monospace;
+        }
+        #game-container {
+            position: relative;
+            border: 4px solid #00ffaa;
+            box-shadow: 0 0 20px #00ffaa;
+        }
+        #controls {
+            position: absolute;
+            bottom: -150px;
+            left: 0;
+            right: 0;
+            color: #00ffaa;
+            text-align: center;
+            font-size: 10px;
+            line-height: 1.8;
+        }
+        #controls h3 { margin-bottom: 10px; color: #fff; }
+        #level-select {
+            position: absolute;
+            top: -50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        #level-select button {
+            background: #00ffaa;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        #level-select button:hover { background: #fff; }
+        #level-select button.active { background: #ff0055; color: #fff; }
+    </style>
+    <script src="phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <div id="level-select">
+            <button onclick="switchLevel('chase')" id="btn-chase">🚀 AETHERION CHASE</button>
+            <button onclick="switchLevel('runner')" id="btn-runner">🏃 UMBRA PRIME RUN</button>
+        </div>
+        <div id="controls">
+            <h3>⚔️ LORD SOUL CONTROLS ⚔️</h3>
+            <strong>MOVEMENT:</strong> Arrow Keys | <strong>Hover:</strong> UP (in air)<br>
+            <strong>Z:</strong> 8-Hit Punch Combo | <strong>C:</strong> 3-Hit Kick Combo<br>
+            <strong>X:</strong> 4-Hit Sword Combo | <strong>V:</strong> Energy Blast (2-stage)<br>
+            <strong>E:</strong> Big Energy Beam | <strong>Space:</strong> Jump (Double Jump)<br>
+            <strong>Space + Space:</strong> Double Jump | <strong>Z (air):</strong> Jump Attack<br>
+            <em id="level-instructions"></em>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const CONFIG = {
+            width: 800,
+            height: 450,
+            lordSoulSpeed: 460,
+            gravity: 1200,
+            jumpForce: -750,
+            doubleJumpForce: -650
+        };
+
+        let currentLevel = 'chase';
+        let gameInstance = null;
+
+        // --- LORD SOUL ANIMATION DATA ---
+        // Using placeholder colors since we're loading individual assets
+        const LORD_SOUL_COLORS = {
+            primary: 0x6633cc,    // Purple
+            secondary: 0x3399ff,  // Blue
+            accent: 0x00ffaa,     // Cyan
+            glow: 0xff00ff        // Magenta
+        };
+
+        // --- CHASE LEVEL SCENE ---
+        class ChaseScene extends Phaser.Scene {
+            constructor() { super('ChaseScene'); }
+
+            preload() {
+                // Create placeholder textures programmatically
+                this.createPlaceholderTextures();
+            }
+
+            create() {
+                // Background layers (parallax)
+                this.bgFar = this.add.tileSprite(400, 225, 800, 450, 'bg-far');
+                this.bgMid = this.add.tileSprite(400, 225, 800, 450, 'bg-mid');
+                this.bgNear = this.add.tileSprite(400, 225, 800, 450, 'bg-near');
+
+                // Player (Lord Soul on skiff)
+                this.player = this.createLordSoulSkiff(100, 225);
+                
+                // Groups
+                this.enemies = this.physics.add.group();
+                this.projectiles = this.physics.add.group();
+                this.enemyProjectiles = this.physics.add.group();
+                this.collectibles = this.physics.add.group();
+
+                // Colliders
+                this.physics.add.overlap(this.player.projectiles, this.enemies, this.hitEnemy, null, this);
+                this.physics.add.overlap(this.player, this.enemyProjectiles, this.playerHit, null, this);
+                this.physics.add.overlap(this.player, this.enemies, this.playerHit, null, this);
+                this.physics.add.overlap(this.player, this.collectibles, this.collectOrb, null, this);
+
+                // Input
+                this.cursors = this.input.keyboard.createCursorKeys();
+                this.keyZ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+                this.keyX = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+                this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+                // HUD
+                this.createHUD();
+
+                // Level state
+                this.scrollSpeed = 100;
+                this.maxScrollSpeed = 200;
+                this.distance = 0;
+                this.score = 0;
+                this.section = 1;
+                this.bossActive = false;
+                this.bossDefeated = false;
+
+                // Spawn timers
+                this.time.addEvent({ delay: 1000, callback: this.spawnEnemy, callbackScope: this, loop: true });
+                this.time.addEvent({ delay: 2000, callback: this.spawnCollectible, callbackScope: this, loop: true });
+
+                // Instructions
+                document.getElementById('level-instructions').textContent = 
+                    '🎯 CHASE: Dodge obstacles, shoot enemies, survive 2 minutes, defeat boss!';
+
+                // Boss spawn timer
+                this.time.delayedCall(90000, () => this.spawnBoss(), this);
+            }
+
+            update(time, delta) {
+                // Parallax scrolling
+                this.bgFar.tilePositionX += this.scrollSpeed * 0.3 * delta;
+                this.bgMid.tilePositionX += this.scrollSpeed * 0.6 * delta;
+                this.bgNear.tilePositionX += this.scrollSpeed * delta;
+
+                // Player movement
+                this.handlePlayerInput(delta);
+                
+                // Update invincibility
+                if (this.player.invincible) {
+                    this.player.invincibleTime -= delta * 1000;
+                    if (this.player.invincibleTime <= 0) {
+                        this.player.invincible = false;
+                    }
+                }
+
+                // Increase difficulty
+                this.scrollSpeed = Math.min(this.scrollSpeed + 0.02 * delta, this.maxScrollSpeed);
+                this.distance += this.scrollSpeed * delta;
+
+                // Update section
+                if (this.distance > 50000 && this.section === 1) { this.section = 2; this.showSectionText('THOUGHT STORMS'); }
+                if (this.distance > 100000 && this.section === 2) { this.section = 3; this.showSectionText('GUARDIAN PURSUIT'); }
+
+                // Update enemies
+                this.enemies.getChildren().forEach(enemy => {
+                    enemy.x -= this.scrollSpeed * delta;
+                    if (enemy.type === 'drone') {
+                        // Move toward player Y
+                        if (this.player.y < enemy.y) enemy.y -= 50 * delta;
+                        else enemy.y += 50 * delta;
+                    } else if (enemy.type === 'cannon') {
+                        // Fire occasionally
+                        if (Math.random() < 0.01) this.fireEnemyProjectile(enemy);
+                    }
+                    // Remove off-screen
+                    if (enemy.x < -50) enemy.destroy();
+                });
+
+                // Update projectiles
+                this.projectiles.getChildren().forEach(proj => {
+                    proj.x += 400 * delta;
+                    if (proj.x > 850) proj.destroy();
+                });
+
+                this.enemyProjectiles.getChildren().forEach(proj => {
+                    proj.x -= 200 * delta;
+                    if (proj.x < -50) proj.destroy();
+                });
+
+                // Update collectibles
+                this.collectibles.getChildren().forEach(orb => {
+                    orb.x -= this.scrollSpeed * delta;
+                    orb.angle += 50 * delta;
+                    if (orb.x < -50) orb.destroy();
+                });
+
+                // Update HUD
+                this.updateHUD();
+
+                // Check boss
+                if (this.bossActive && this.boss) {
+                    this.updateBoss(time, delta);
+                }
+
+                // Check win (survive 2 minutes = 120000ms)
+                if (!this.bossActive && !this.bossDefeated && this.time.now > 120000) {
+                    this.spawnBoss();
+                }
+            }
+
+            createPlaceholderTextures() {
+                // Lord Soul skiff
+                const skiffGraphics = this.make.graphics();
+                skiffGraphics.fillStyle(0x00ffaa, 1);
+                skiffGraphics.fillRoundedRect(0, 0, 48, 20, 5);
+                skiffGraphics.fillStyle(0x6633cc, 1);
+                skiffGraphics.fillCircle(24, 10, 8);
+                skiffGraphics.generateTexture('player-skiff', 48, 20);
+
+                // Backgrounds
+                const bgFarGraphics = this.make.graphics();
+                bgFarGraphics.fillStyle(0x1a1a2e, 0.5);
+                for (let i = 0; i < 20; i++) {
+                    bgFarGraphics.fillRect(Math.random() * 800, Math.random() * 450, 20, 60);
+                }
+                bgFarGraphics.generateTexture('bg-far', 800, 450);
+
+                const bgMidGraphics = this.make.graphics();
+                bgMidGraphics.fillStyle(0x16213e, 0.7);
+                for (let i = 0; i < 15; i++) {
+                    bgMidGraphics.fillRect(Math.random() * 800, Math.random() * 450, 40, 80);
+                }
+                bgMidGraphics.generateTexture('bg-mid', 800, 450);
+
+                const bgNearGraphics = this.make.graphics();
+                bgNearGraphics.fillStyle(0x0f3460, 0.9);
+                for (let i = 0; i < 10; i++) {
+                    bgNearGraphics.fillRect(Math.random() * 800, Math.random() * 450, 60, 100);
+                }
+                bgNearGraphics.generateTexture('bg-near', 800, 450);
+
+                // Enemies
+                const droneGraphics = this.make.graphics();
+                droneGraphics.fillStyle(0xff0055, 1);
+                droneGraphics.fillCircle(12, 12, 12);
+                droneGraphics.fillStyle(0xff6666, 1);
+                droneGraphics.fillCircle(12, 12, 5);
+                droneGraphics.generateTexture('enemy-drone', 24, 24);
+
+                const cannonDroneGraphics = this.make.graphics();
+                cannonDroneGraphics.fillStyle(0xff3366, 1);
+                cannonDroneGraphics.fillRect(0, 8, 32, 16);
+                cannonDroneGraphics.fillStyle(0xff6699, 1);
+                cannonDroneGraphics.fillRect(24, 4, 12, 24);
+                cannonDroneGraphics.generateTexture('enemy-cannon', 36, 32);
+
+                const hunterGraphics = this.make.graphics();
+                hunterGraphics.fillStyle(0xcc0044, 1);
+                hunterGraphics.fillTriangle(0, 0, 48, 24, 0, 48);
+                hunterGraphics.fillStyle(0xff3366, 1);
+                hunterGraphics.fillCircle(12, 24, 6);
+                hunterGraphics.generateTexture('enemy-hunter', 48, 48);
+
+                // Boss
+                const bossGraphics = this.make.graphics();
+                bossGraphics.fillStyle(0x660033, 1);
+                bossGraphics.fillCircle(64, 64, 60);
+                bossGraphics.fillStyle(0xff0066, 1);
+                bossGraphics.fillCircle(64, 64, 40);
+                bossGraphics.fillStyle(0xffffff, 1);
+                bossGraphics.fillCircle(64, 64, 20);
+                bossGraphics.fillStyle(0x00ffaa, 1);
+                bossGraphics.fillCircle(64, 64, 8);
+                bossGraphics.generateTexture('boss-guardian', 128, 128);
+
+                // Projectiles
+                const projGraphics = this.make.graphics();
+                projGraphics.fillStyle(0x00ffaa, 1);
+                projGraphics.fillCircle(6, 6, 6);
+                projGraphics.generateTexture('player-projectile', 12, 12);
+
+                const enemyProjGraphics = this.make.graphics();
+                enemyProjGraphics.fillStyle(0xff3366, 1);
+                enemyProjGraphics.fillCircle(8, 8, 8);
+                enemyProjGraphics.generateTexture('enemy-projectile', 16, 16);
+
+                // Collectibles
+                const orbGraphics = this.make.graphics();
+                orbGraphics.fillStyle(0x00aaff, 1);
+                orbGraphics.fillCircle(10, 10, 10);
+                orbGraphics.fillStyle(0x66ffff, 1);
+                orbGraphics.fillCircle(10, 10, 5);
+                orbGraphics.generateTexture('knowledge-orb', 20, 20);
+
+                // Explosion
+                const expGraphics = this.make.graphics();
+                expGraphics.fillStyle(0xffaa00, 1);
+                expGraphics.fillCircle(16, 16, 16);
+                expGraphics.fillStyle(0xffff00, 1);
+                expGraphics.fillCircle(16, 16, 8);
+                expGraphics.generateTexture('explosion', 32, 32);
+            }
+
+            createLordSoulSkiff(x, y) {
+                const container = this.add.container(x, y);
+                
+                // Skiff sprite
+                const skiff = this.add.sprite(0, 0, 'player-skiff');
+                container.add(skiff);
+
+                // Lord Soul sprite (placeholder - colored rectangle on skiff)
+                const lordSoul = this.add.rectangle(0, -15, 20, 30, LORD_SOUL_COLORS.primary);
+                container.add(lordSoul);
+
+                // Glow effect
+                const glow = this.add.circle(0, 0, 35, LORD_SOUL_COLORS.glow, 0.3);
+                container.add(glow);
+
+                // Physics
+                this.physics.add.existing(container);
+                container.body.setSize(48, 40);
+                container.body.setCollideWorldBounds(true);
+
+                // Stats
+                container.hp = 5;
+                container.maxHP = 5;
+                container.invincible = false;
+                container.invincibleTime = 0;
+
+                // Methods
+                container.takeDamage = (amount) => {
+                    if (container.invincible) return;
+                    container.hp -= amount;
+                    container.invincible = true;
+                    container.invincibleTime = 1000;
+                    
+                    // Flash effect
+                    container.setTint(0xff0000);
+                    this.time.delayedCall(100, () => {
+                        container.clearTint();
+                        this.time.delayedCall(100, () => {
+                            if (container.hp > 0) container.invincible = false;
+                        });
+                    });
+
+                    if (container.hp <= 0) {
+                        this.gameOver();
+                    }
+                };
+
+                container.fireProjectile = () => {
+                    const proj = this.projectiles.create(container.x + 30, container.y, 'player-projectile');
+                    proj.body.allowGravity = false;
+                };
+
+                container.barrelRoll = () => {
+                    if (container.invincible) return;
+                    container.invincible = true;
+                    
+                    this.tweens.add({
+                        targets: container,
+                        angle: 360,
+                        duration: 500,
+                        onComplete: () => {
+                            container.angle = 0;
+                            this.time.delayedCall(2500, () => {
+                                container.invincible = false;
+                            });
+                        }
+                    });
+                };
+
+                return container;
+            }
+
+            handlePlayerInput(delta) {
+                const speed = 300;
+
+                if (this.cursors.up.isDown) {
+                    this.player.y -= speed * delta;
+                    this.player.y = Math.max(25, this.player.y);
+                }
+                if (this.cursors.down.isDown) {
+                    this.player.y += speed * delta;
+                    this.player.y = Math.min(425, this.player.y);
+                }
+                if (this.cursors.left.isDown) {
+                    this.player.x -= speed * delta;
+                    this.player.x = Math.max(25, this.player.x);
+                }
+                if (this.cursors.right.isDown) {
+                    this.player.x += speed * delta;
+                    this.player.x = Math.min(775, this.player.x);
+                }
+
+                // Shooting
+                if (Phaser.Input.Keyboard.JustDown(this.keyZ)) {
+                    this.player.fireProjectile();
+                    this.showFloatingText('PEW!', this.player.x + 40, this.player.y);
+                }
+
+                // Barrel roll
+                if (Phaser.Input.Keyboard.JustDown(this.keySpace)) {
+                    this.player.barrelRoll();
+                }
+
+                // Special (X key - spread shot)
+                if (Phaser.Input.Keyboard.JustDown(this.keyX)) {
+                    this.fireSpreadShot();
+                }
+            }
+
+            fireSpreadShot() {
+                const angles = [-20, 0, 20];
+                angles.forEach(angle => {
+                    const proj = this.projectiles.create(this.player.x + 30, this.player.y, 'player-projectile');
+                    proj.body.allowGravity = false;
+                    proj.setAngle(angle);
+                });
+            }
+
+            spawnEnemy() {
+                if (this.bossActive) return;
+
+                const types = ['drone', 'drone', 'cannon'];
+                if (this.section >= 3) types.push('hunter');
+
+                const type = types[Math.floor(Math.random() * types.length)];
+                const y = 50 + Math.random() * 350;
+
+                let texture = 'enemy-drone';
+                if (type === 'cannon') texture = 'enemy-cannon';
+                if (type === 'hunter') texture = 'enemy-hunter';
+
+                const enemy = this.enemies.create(850, y, texture);
+                enemy.type = type;
+                enemy.hp = type === 'hunter' ? 5 : (type === 'cannon' ? 3 : 1);
+                enemy.body.allowGravity = false;
+            }
+
+            spawnCollectible() {
+                if (this.bossActive) return;
+                const y = 50 + Math.random() * 350;
+                const orb = this.collectibles.create(850, y, 'knowledge-orb');
+                orb.body.allowGravity = false;
+            }
+
+            fireEnemyProjectile(enemy) {
+                const proj = this.enemyProjectiles.create(enemy.x, enemy.y, 'enemy-projectile');
+                proj.body.allowGravity = false;
+                // Aim at player
+                const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.player.x, this.player.y);
+                proj.setVelocityX(Math.cos(angle) * 200);
+                proj.setVelocityY(Math.sin(angle) * 200);
+            }
+
+            hitEnemy(proj, enemy) {
+                proj.destroy();
+                enemy.hp--;
+                
+                // Hit effect
+                const exp = this.add.circle(enemy.x, enemy.y, 20, 0xffff00, 0.8);
+                this.tweens.add({
+                    targets: exp,
+                    scale: 2,
+                    alpha: 0,
+                    duration: 200,
+                    onComplete: () => exp.destroy()
+                });
+
+                if (enemy.hp <= 0) {
+                    // Explosion
+                    const explosion = this.add.sprite(enemy.x, enemy.y, 'explosion');
+                    this.tweens.add({
+                        targets: explosion,
+                        scale: 2,
+                        alpha: 0,
+                        duration: 300,
+                        onComplete: () => explosion.destroy()
+                    });
+
+                    this.score += enemy.type === 'hunter' ? 100 : (enemy.type === 'cannon' ? 50 : 25);
+                    enemy.destroy();
+                }
+            }
+
+            playerHit(player, source) {
+                player.takeDamage(1);
+                source.destroy?.();
+            }
+
+            collectOrb(player, orb) {
+                orb.destroy();
+                this.score += 25;
+                this.showFloatingText('+25 XP', player.x, player.y - 30);
+            }
+
+            spawnBoss() {
+                this.bossActive = true;
+                this.showSectionText('⚠️ ARCHIVE GUARDIAN ⚠️');
+
+                // Create boss
+                this.boss = this.add.container(700, 225);
+                const bossSprite = this.add.sprite(0, 0, 'boss-guardian');
+                this.boss.add(bossSprite);
+                this.physics.add.existing(this.boss);
+                this.boss.body.allowGravity = false;
+                this.boss.body.setSize(100, 100);
+                this.boss.hp = 100;
+                this.boss.phase = 1;
+                this.boss.attackTimer = 0;
+
+                this.physics.add.overlap(this.player.projectiles, this.boss, this.hitBoss, null, this);
+            }
+
+            updateBoss(time, delta) {
+                if (!this.boss) return;
+
+                this.boss.attackTimer += delta;
+
+                // Phase 1: Laser sweep (HP 100-70)
+                if (this.boss.phase === 1 && this.boss.attackTimer > 2000) {
+                    this.bossAttackLaser();
+                    this.boss.attackTimer = 0;
+                }
+
+                // Phase 2: Spawn + shoot (HP 70-30)
+                if (this.boss.phase === 2 && this.boss.attackTimer > 1500) {
+                    this.bossAttackSpawn();
+                    this.boss.attackTimer = 0;
+                }
+
+                // Phase 3: Desperation (HP 30-0)
+                if (this.boss.phase === 3 && this.boss.attackTimer > 1000) {
+                    this.bossAttackDesperation();
+                    this.boss.attackTimer = 0;
+                }
+
+                // Phase transitions
+                if (this.boss.hp <= 70 && this.boss.phase === 1) this.boss.phase = 2;
+                if (this.boss.hp <= 30 && this.boss.phase === 2) this.boss.phase = 3;
+            }
+
+            hitBoss(proj, boss) {
+                proj.destroy();
+                boss.hp--;
+                
+                // Flash
+                boss.setTint(0xff0000);
+                this.time.delayedCall(50, () => boss.clearTint());
+
+                if (boss.hp <= 0) {
+                    this.bossDefeated = true;
+                    this.bossActive = false;
+                    this.showSectionText('🎉 ESCAPE SUCCESSFUL! 🎉');
+                    this.time.delayedCall(3000, () => this.scene.restart());
+                }
+            }
+
+            bossAttackLaser() {
+                // Telegraph
+                const laserWarning = this.add.rectangle(400, 225, 800, 40, 0xff0000, 0.5);
+                this.time.delayedCall(1000, () => {
+                    laserWarning.destroy();
+                    // Fire laser
+                    const laser = this.add.rectangle(400, 225, 800, 20, 0xff0066, 1);
+                    this.time.delayedCall(500, () => laser.destroy());
+                    
+                    // Check hit
+                    if (Math.abs(this.player.y - 225) < 30) {
+                        this.player.takeDamage(1);
+                    }
+                });
+            }
+
+            bossAttackSpawn() {
+                // Spawn minions
+                for (let i = 0; i < 4; i++) {
+                    const enemy = this.enemies.create(600, 50 + i * 100, 'enemy-drone');
+                    enemy.type = 'drone';
+                    enemy.hp = 1;
+                    enemy.body.allowGravity = false;
+                }
+            }
+
+            bossAttackDesperation() {
+                this.bossAttackLaser();
+                this.bossAttackSpawn();
+            }
+
+            createHUD() {
+                // HP bar
+                this.hpBarBg = this.add.rectangle(20, 20, 150, 20, 0x333333);
+                this.hpBar = this.add.rectangle(20, 20, 150, 20, 0x00ffaa);
+                this.hpBar.setOrigin(0, 0);
+                
+                this.hpText = this.add.text(25, 15, 'HP: 5/5', { 
+                    fontFamily: 'monospace', 
+                    fontSize: '14px', 
+                    color: '#ffffff' 
+                });
+
+                // Score
+                this.scoreText = this.add.text(780, 20, '0', { 
+                    fontFamily: 'monospace', 
+                    fontSize: '20px', 
+                    color: '#00ffaa' 
+                }).setOrigin(1, 0);
+
+                // Distance
+                this.distanceText = this.add.text(400, 20, 'DIST: 0m', { 
+                    fontFamily: 'monospace', 
+                    fontSize: '14px', 
+                    color: '#ffffff' 
+                }).setOrigin(0.5, 0);
+            }
+
+            updateHUD() {
+                const hpPercent = this.player.hp / this.player.maxHP;
+                this.hpBar.width = 150 * hpPercent;
+                this.hpText.setText(`HP: ${this.player.hp}/${this.player.maxHP}`);
+                this.scoreText.setText(this.score.toString());
+                this.distanceText.setText(`DIST: ${Math.floor(this.distance / 1000)}m`);
+            }
+
+            showFloatingText(text, x, y) {
+                const floatText = this.add.text(x, y, text, { 
+                    fontFamily: 'monospace', 
+                    fontSize: '16px', 
+                    color: '#00ffaa',
+                    stroke: '#000000',
+                    strokeThickness: 3
+                }).setOrigin(0.5);
+
+                this.tweens.add({
+                    targets: floatText,
+                    y: y - 50,
+                    alpha: 0,
+                    duration: 1000,
+                    onComplete: () => floatText.destroy()
+                });
+            }
+
+            showSectionText(text) {
+                const sectionText = this.add.text(400, 100, text, { 
+                    fontFamily: 'monospace', 
+                    fontSize: '24px', 
+                    color: '#00ffaa',
+                    stroke: '#000000',
+                    strokeThickness: 4
+                }).setOrigin(0.5);
+
+                this.tweens.add({
+                    targets: sectionText,
+                    alpha: 0,
+                    duration: 2000,
+                    delay: 1000,
+                    onComplete: () => sectionText.destroy()
+                });
+            }
+
+            gameOver() {
+                this.showSectionText('💀 SKIFF DESTROYED - RESTARTING...');
+                this.time.delayedCall(2000, () => this.scene.restart());
+            }
+        }
+
+        // --- AUTO-RUNNER LEVEL SCENE ---
+        class RunnerScene extends Phaser.Scene {
+            constructor() { super('RunnerScene'); }
+
+            preload() {
+                this.createPlaceholderTextures();
+            }
+
+            create() {
+                // Background layers
+                this.bgFar = this.add.tileSprite(400, 225, 800, 450, 'runner-bg-far');
+                this.bgMid = this.add.tileSprite(400, 225, 800, 450, 'runner-bg-mid');
+                this.bgNear = this.add.tileSprite(400, 225, 800, 450, 'runner-bg-near');
+
+                // Ground
+                this.ground = this.add.tileSprite(400, 400, 800, 100, 'runner-ground');
+                
+                // Player (Lord Soul)
+                this.player = this.createLordSoulRunner(100, 300);
+
+                // Groups
+                this.obstacles = this.physics.add.group();
+                this.gaps = this.add.group();
+                this.platforms = this.physics.add.group();
+                this.hazards = this.physics.add.group();
+
+                // Colliders
+                this.physics.add.collider(this.player, this.ground);
+                this.physics.add.collider(this.player, this.platforms);
+                this.physics.add.overlap(this.player, this.obstacles, this.playerHitObstacle, null, this);
+                this.physics.add.overlap(this.player, this.hazards, this.playerHitObstacle, null, this);
+
+                // Input
+                this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+                this.keyDown = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+
+                // Level state
+                this.runSpeed = 200;
+                this.maxSpeed = 320;
+                this.distance = 0;
+                this.section = 1;
+                this.nextObstacleIndex = 0;
+                this.levelData = this.generateLevelData();
+
+                // HUD
+                this.createHUD();
+
+                // Instructions
+                document.getElementById('level-instructions').textContent = 
+                    '🏃 RUNNER: Hold SPACE for higher jump, double jump available, avoid obstacles!';
+
+                // Death zone
+                this.deathZone = this.add.zone(0, 450, 800, 1).setOrigin(0);
+            }
+
+            update(time, delta) {
+                // Auto-run
+                this.player.x += this.runSpeed * delta;
+                
+                // Camera follow
+                this.cameras.main.scrollX = this.player.x - 200;
+
+                // Handle input
+                this.handleInput(delta);
+
+                // Parallax
+                this.bgFar.tilePositionX = this.player.x * 0.2;
+                this.bgMid.tilePositionX = this.player.x * 0.5;
+                this.bgNear.tilePositionX = this.player.x * 0.8;
+                this.ground.tilePositionX = this.player.x;
+
+                // Increase speed
+                this.runSpeed = Math.min(this.runSpeed + 0.05 * delta, this.maxSpeed);
+                this.distance += this.runSpeed * delta;
+
+                // Spawn obstacles
+                this.spawnObstacles();
+
+                // Update obstacles
+                this.obstacles.getChildren().forEach(obs => {
+                    obs.x -= this.runSpeed * delta;
+                    if (obs.x < -100) obs.destroy();
+                });
+
+                this.platforms.getChildren().forEach(platform => {
+                    if (platform.pattern === 'rising') {
+                        platform.y = platform.baseY + Math.sin(time * 0.002) * 50;
+                    } else if (platform.pattern === 'falling') {
+                        platform.y = platform.baseY + Math.cos(time * 0.002) * 50;
+                    }
+                    platform.x -= this.runSpeed * delta;
+                    if (platform.x < -100) platform.destroy();
+                });
+
+                this.hazards.getChildren().forEach(hazard => {
+                    hazard.x -= this.runSpeed * delta;
+                    if (hazard.active) {
+                        hazard.alpha = 0.5 + Math.sin(time * 0.01) * 0.5;
+                    }
+                    if (hazard.x < -100) hazard.destroy();
+                });
+
+                // Check death (fell)
+                if (this.player.y > 450) {
+                    this.gameOver();
+                }
+
+                // Update section
+                if (this.distance > 30000 && this.section === 1) { 
+                    this.section = 2; 
+                    this.showSectionText('DOUBLE JUMP ZONE'); 
+                }
+                if (this.distance > 60000 && this.section === 2) { 
+                    this.section = 3; 
+                    this.showSectionText('MOVING HAZARDS'); 
+                }
+                if (this.distance > 90000 && this.section === 3) { 
+                    this.section = 4; 
+                    this.showSectionText('PRECISION GAUNTLET'); 
+                }
+
+                // Check win
+                if (this.distance > 120000) {
+                    this.levelComplete();
+                }
+
+                this.updateHUD();
+            }
+
+            createPlaceholderTextures() {
+                // Lord Soul runner
+                const playerGraphics = this.make.graphics();
+                playerGraphics.fillStyle(LORD_SOUL_COLORS.primary, 1);
+                playerGraphics.fillRect(0, 0, 24, 48);
+                playerGraphics.fillStyle(LORD_SOUL_COLORS.accent, 1);
+                playerGraphics.fillRect(8, 8, 8, 8);
+                playerGraphics.generateTexture('runner-player', 24, 48);
+
+                // Backgrounds
+                const bgFarGraphics = this.make.graphics();
+                bgFarGraphics.fillStyle(0x0d0d1a, 0.8);
+                for (let i = 0; i < 30; i++) {
+                    bgFarGraphics.fillRect(Math.random() * 800, Math.random() * 450, 2, 2);
+                }
+                bgFarGraphics.generateTexture('runner-bg-far', 800, 450);
+
+                const bgMidGraphics = this.make.graphics();
+                bgMidGraphics.fillStyle(0x1a1a3e, 0.9);
+                for (let i = 0; i < 20; i++) {
+                    bgMidGraphics.fillRect(Math.random() * 800, Math.random() * 450, 30, 80);
+                }
+                bgMidGraphics.generateTexture('runner-bg-mid', 800, 450);
+
+                const bgNearGraphics = this.make.graphics();
+                bgNearGraphics.fillStyle(0x2a2a5e, 1);
+                for (let i = 0; i < 15; i++) {
+                    bgNearGraphics.fillRect(Math.random() * 800, Math.random() * 450, 50, 100);
+                }
+                bgNearGraphics.generateTexture('runner-bg-near', 800, 450);
+
+                // Ground
+                const groundGraphics = this.make.graphics();
+                groundGraphics.fillStyle(0x330033, 1);
+                groundGraphics.fillRect(0, 0, 800, 100);
+                groundGraphics.fillStyle(0x660066, 1);
+                for (let i = 0; i < 40; i++) {
+                    groundGraphics.fillRect(i * 20, 0, 10, 10);
+                }
+                groundGraphics.generateTexture('runner-ground', 800, 100);
+
+                // Obstacles
+                const obsGraphics = this.make.graphics();
+                obsGraphics.fillStyle(0xff3366, 1);
+                obsGraphics.fillRect(0, 0, 32, 48);
+                obsGraphics.fillStyle(0xff6699, 1);
+                obsGraphics.fillRect(4, 4, 24, 20);
+                obsGraphics.generateTexture('runner-obstacle', 32, 48);
+
+                // Spikes
+                const spikeGraphics = this.make.graphics();
+                spikeGraphics.fillStyle(0xcc0044, 1);
+                spikeGraphics.fillTriangle(0, 32, 16, 0, 32, 32);
+                spikeGraphics.generateTexture('runner-spike', 32, 32);
+
+                // Platform
+                const platformGraphics = this.make.graphics();
+                platformGraphics.fillStyle(0x6633cc, 1);
+                platformGraphics.fillRect(0, 0, 80, 16);
+                platformGraphics.fillStyle(0x9966ff, 1);
+                platformGraphics.fillRect(4, 4, 72, 8);
+                platformGraphics.generateTexture('runner-platform', 80, 16);
+
+                // Hazard (shadow hand)
+                const hazardGraphics = this.make.graphics();
+                hazardGraphics.fillStyle(0x330033, 0.8);
+                hazardGraphics.fillCircle(24, 24, 24);
+                hazardGraphics.fillStyle(0x660066, 1);
+                for (let i = 0; i < 5; i++) {
+                    hazardGraphics.fillCircle(24 + Math.cos(i * 1.25) * 16, 24 + Math.sin(i * 1.25) * 16, 6);
+                }
+                hazardGraphics.generateTexture('runner-hazard', 48, 48);
+
+                // Portal (goal)
+                const portalGraphics = this.make.graphics();
+                portalGraphics.fillStyle(0x00ffaa, 0.5);
+                portalGraphics.fillCircle(50, 75, 50);
+                portalGraphics.fillStyle(0x66ffff, 1);
+                portalGraphics.fillCircle(50, 75, 30);
+                portalGraphics.generateTexture('runner-portal', 100, 150);
+            }
+
+            createLordSoulRunner(x, y) {
+                const player = this.physics.add.sprite(x, y, 'runner-player');
+                player.body.setGravityY(1500);
+                player.body.setCollideWorldBounds(false);
+                
+                // Jump state
+                player.canDoubleJump = true;
+                player.isHoldingJump = false;
+                player.jumpChargeTime = 0;
+
+                return player;
+            }
+
+            handleInput(delta) {
+                // Jump pressed
+                if (Phaser.Input.Keyboard.JustDown(this.keySpace)) {
+                    if (this.player.body.touching.down) {
+                        this.playerJump(-750);
+                        this.player.canDoubleJump = true;
+                    } else if (this.player.canDoubleJump) {
+                        this.playerJump(-650);
+                        this.player.canDoubleJump = false;
+                        this.showFloatingText('DOUBLE JUMP!', this.player.x, this.player.y - 30);
+                    }
+                    this.player.isHoldingJump = true;
+                    this.player.jumpChargeTime = 0;
+                }
+
+                // Jump held (charge)
+                if (this.player.isHoldingJump && this.keySpace.isDown) {
+                    this.player.jumpChargeTime += 16;
+                    if (this.player.jumpChargeTime > 300) this.player.jumpChargeTime = 300;
+                }
+
+                // Jump released
+                if (this.player.isHoldingJump && Phaser.Input.Keyboard.JustUp(this.keySpace)) {
+                    this.player.isHoldingJump = false;
+                    if (this.player.body.velocity.y < -200 && this.player.jumpChargeTime < 300) {
+                        this.player.body.setVelocityY(this.player.body.velocity.y * 0.5);
+                    }
+                }
+
+                // Fast fall
+                if (Phaser.Input.Keyboard.JustDown(this.keyDown) && !this.player.body.touching.down) {
+                    this.player.body.setVelocityY(500);
+                }
+            }
+
+            playerJump(force) {
+                const chargedForce = force - (this.player.jumpChargeTime * 0.5);
+                this.player.body.setVelocityY(chargedForce);
+                
+                // Jump effect
+                const effect = this.add.circle(this.player.x, this.player.y + 24, 20, 0x00ffaa, 0.5);
+                this.tweens.add({
+                    targets: effect,
+                    scale: 2,
+                    alpha: 0,
+                    duration: 200,
+                    onComplete: () => effect.destroy()
+                });
+            }
+
+            generateLevelData() {
+                const data = [];
+                let x = 400;
+
+                // Section 1: Warming up (0-30m)
+                for (let i = 0; i < 10; i++) {
+                    x += 200 + Math.random() * 100;
+                    data.push({ type: 'obstacle', x: x, height: 32 + Math.random() * 32 });
+                    x += 150;
+                    data.push({ type: 'gap', x: x, width: 50 + Math.random() * 30 });
+                }
+
+                // Section 2: Double jump intro (30-60m)
+                for (let i = 0; i < 8; i++) {
+                    x += 300;
+                    data.push({ type: 'gap', x: x, width: 100 + Math.random() * 40 });
+                    x += 200;
+                    data.push({ type: 'platform', x: x, pattern: 'static' });
+                }
+
+                // Section 3: Moving hazards (60-90m)
+                for (let i = 0; i < 10; i++) {
+                    x += 250;
+                    data.push({ type: 'platform', x: x, pattern: Math.random() > 0.5 ? 'rising' : 'falling' });
+                    x += 150;
+                    data.push({ type: 'hazard', x: x, hazardType: 'spike' });
+                }
+
+                // Section 4: Precision gauntlet (90-120m)
+                for (let i = 0; i < 15; i++) {
+                    x += 180;
+                    data.push({ type: 'obstacle', x: x, height: 64 });
+                    x += 120;
+                    data.push({ type: 'gap', x: x, width: 80 });
+                }
+
+                // Final stretch
+                x += 300;
+                data.push({ type: 'portal', x: x });
+
+                return data;
+            }
+
+            spawnObstacles() {
+                const spawnAhead = this.player.x + 900;
+
+                while (this.nextObstacleIndex < this.levelData.length) {
+                    const obs = this.levelData[this.nextObstacleIndex];
+                    if (obs.x <= spawnAhead) {
+                        this.createObstacle(obs);
+                        this.nextObstacleIndex++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            createObstacle(data) {
+                if (data.type === 'obstacle') {
+                    const obs = this.obstacles.create(data.x, 400 - data.height, 'runner-obstacle');
+                    obs.body.allowGravity = false;
+                    obs.body.setImmovable(true);
+                } else if (data.type === 'gap') {
+                    // Gap is just empty space - handled by death zone
+                    const gapIndicator = this.add.rectangle(data.x, 420, data.width, 20, 0xff0000, 0.3);
+                    this.gaps.add(gapIndicator);
+                } else if (data.type === 'platform') {
+                    const platform = this.platforms.create(data.x, 300, 'runner-platform');
+                    platform.body.allowGravity = false;
+                    platform.body.setImmovable(true);
+                    platform.pattern = data.pattern;
+                    platform.baseY = platform.y;
+                } else if (data.type === 'hazard') {
+                    const hazard = this.hazards.create(data.x, 380, 'runner-hazard');
+                    hazard.body.allowGravity = false;
+                    hazard.active = true;
+                } else if (data.type === 'portal') {
+                    const portal = this.add.sprite(data.x, 325, 'runner-portal');
+                    this.physics.add.existing(portal);
+                    portal.body.allowGravity = false;
+                    this.physics.add.overlap(this.player, portal, this.levelComplete, null, this);
+                }
+            }
+
+            playerHitObstacle(player, obstacle) {
+                this.showFloatingText('HIT!', player.x, player.y - 30);
+                this.gameOver();
+            }
+
+            createHUD() {
+                this.distanceText = this.add.text(20, 20, 'DIST: 0m', { 
+                    fontFamily: 'monospace', 
+                    fontSize: '16px', 
+                    color: '#00ffaa' 
+                });
+
+                this.speedText = this.add.text(20, 40, 'SPEED: 200', { 
+                    fontFamily: 'monospace', 
+                    fontSize: '14px', 
+                    color: '#ffffff' 
+                });
+            }
+
+            updateHUD() {
+                this.distanceText.setText(`DIST: ${Math.floor(this.distance / 1000)}m`);
+                this.speedText.setText(`SPEED: ${Math.floor(this.runSpeed)}`);
+            }
+
+            showFloatingText(text, x, y) {
+                const floatText = this.add.text(x, y, text, { 
+                    fontFamily: 'monospace', 
+                    fontSize: '16px', 
+                    color: '#ff3366',
+                    stroke: '#000000',
+                    strokeThickness: 3
+                }).setOrigin(0.5);
+
+                this.tweens.add({
+                    targets: floatText,
+                    y: y - 50,
+                    alpha: 0,
+                    duration: 1000,
+                    onComplete: () => floatText.destroy()
+                });
+            }
+
+            showSectionText(text) {
+                const sectionText = this.add.text(400, 100, text, { 
+                    fontFamily: 'monospace', 
+                    fontSize: '24px', 
+                    color: '#00ffaa',
+                    stroke: '#000000',
+                    strokeThickness: 4
+                }).setOrigin(0.5);
+
+                this.tweens.add({
+                    targets: sectionText,
+                    alpha: 0,
+                    duration: 2000,
+                    delay: 1000,
+                    onComplete: () => sectionText.destroy()
+                });
+            }
+
+            gameOver() {
+                this.showSectionText('💀 FALLEN - RESTARTING...');
+                this.time.delayedCall(1500, () => this.scene.restart());
+            }
+
+            levelComplete() {
+                this.showSectionText('🎉 ESCAPE COMPLETE! 🎉');
+                this.time.delayedCall(2000, () => this.scene.restart());
+            }
+        }
+
+        // --- GAME CONFIG ---
+        const config = {
+            type: Phaser.AUTO,
+            width: CONFIG.width,
+            height: CONFIG.height,
+            parent: 'game-container',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 }, // No gravity for chase, custom for runner
+                    debug: false
+                }
+            },
+            scene: currentLevel === 'chase' ? ChaseScene : RunnerScene
+        };
+
+        // --- INIT GAME ---
+        function initGame() {
+            if (gameInstance) {
+                gameInstance.destroy(true);
+            }
+            config.scene = currentLevel === 'chase' ? ChaseScene : RunnerScene;
+            if (currentLevel === 'runner') {
+                config.physics.arcade.gravity.y = CONFIG.gravity;
+            } else {
+                config.physics.arcade.gravity.y = 0;
+            }
+            gameInstance = new Phaser.Game(config);
+        }
+
+        // --- LEVEL SWITCH ---
+        function switchLevel(level) {
+            currentLevel = level;
+            document.getElementById('btn-chase').classList.toggle('active', level === 'chase');
+            document.getElementById('btn-runner').classList.toggle('active', level === 'runner');
+            initGame();
+        }
+
+        // Start game
+        initGame();
+        document.getElementById('btn-chase').classList.add('active');
+    </script>
+</body>
+</html>

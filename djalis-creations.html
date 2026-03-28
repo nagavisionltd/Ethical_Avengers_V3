@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Djalis Creations | Luxury Handcrafted Excellence</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            /* Luxury Light Theme Palette */
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-accent: #f5f5f0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #8a8a8a;
+            --gold: #c9a962;
+            --gold-light: #e8d5a3;
+            --gold-dark: #9d7f36;
+            --cream: #faf8f5;
+            --border: #e5e5e5;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-hover: rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Smooth reveal animation base */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ==================== NAVIGATION ==================== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(201, 169, 98, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        nav.scrolled {
+            padding: 1rem 4rem;
+            box-shadow: 0 4px 30px var(--shadow);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            transition: width 0.4s ease;
+        }
+
+        .logo:hover::after {
+            width: 100%;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 1px;
+            background: var(--gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: white;
+            padding: 0.75rem 1.75rem;
+            border-radius: 2px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(201, 169, 98, 0.4);
+        }
+
+        /* ==================== HERO SECTION ==================== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 4rem 4rem;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--cream) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 80%;
+            height: 150%;
+            background: radial-gradient(ellipse, rgba(201, 169, 98, 0.08) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-30px, 20px) rotate(5deg); }
+        }
+
+        .hero-content {
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-eyebrow {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.3s forwards;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-weight: 500;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.5s forwards;
+        }
+
+        .hero-title span {
+            display: block;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-style: italic;
+        }
+
+        /* African-inspired decorative motif */
+        .motif {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10 L60 40 L90 40 L65 60 L75 90 L50 70 L25 90 L35 60 L10 40 L40 40 Z'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10 L60 40 L90 40 L65 60 L75 90 L50 70 L25 90 L35 60 L10 40 L40 40 Z'/%3E%3C/svg%3E");
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+        }
+
+        .hero-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.7s forwards;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.9s forwards;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 2px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(201, 169, 98, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(201, 169, 98, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 1rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== ABOUT SECTION ==================== */
+        .about {
+            padding: 8rem 4rem;
+            background: var(--bg-secondary);
+        }
+
+        .section-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: center;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-label::before,
+        .section-label::after {
+            content: '';
+            height: 1px;
+            width: 40px;
+            background: linear-gradient(90deg, transparent, var(--gold));
+        }
+
+        .section-label::after {
+            background: linear-gradient(90deg, var(--gold), transparent);
+        }
+
+        .about-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 500;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        .about-text {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 2rem;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding-top: 3rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .about-image {
+            position: relative;
+            height: 600px;
+            background: linear-gradient(135deg, var(--bg-accent) 0%, var(--border) 100%);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .about-image:hover img {
+            transform: scale(1.05);
+        }
+
+        .about-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 100%);
+        }
+
+        /* ==================== COLLECTIONS SECTION ==================== */
+        .collections {
+            padding: 8rem 4rem;
+            background: var(--cream);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 5rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 500;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .collection-card {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .collection-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px var(--shadow-hover);
+        }
+
+        .collection-image {
+            height: 350px;
+            background: linear-gradient(135deg, var(--bg-accent) 0%, var(--border) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .collection-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .collection-card:hover .collection-image img {
+            transform: scale(1.1);
+        }
+
+        /* Product card hover */
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px var(--shadow-hover);
+        }
+
+        .product-card:hover img {
+            transform: scale(1.08);
+        }
+
+        .collection-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .collection-card:hover .collection-overlay {
+            opacity: 1;
+        }
+
+        .collection-info {
+            padding: 2rem;
+        }
+
+        .collection-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .collection-price {
+            font-size: 0.875rem;
+            color: var(--gold);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .collection-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
+        /* ==================== FEATURES SECTION ==================== */
+        .features {
+            padding: 8rem 4rem;
+            background: var(--bg-secondary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3rem;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            transition: all 0.4s ease;
+            border: 1px solid transparent;
+        }
+
+        .feature-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .feature-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* ==================== TESTIMONIAL SECTION ==================== */
+        .testimonial {
+            padding: 8rem 4rem;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--cream) 100%);
+            text-align: center;
+        }
+
+        .testimonial-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .testimonial-quote {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-style: italic;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--text-primary);
+            margin-bottom: 3rem;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+        }
+
+        .testimonial-info {
+            text-align: left;
+        }
+
+        .testimonial-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .testimonial-title {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* ==================== CTA SECTION ==================== */
+        .cta {
+            padding: 8rem 4rem;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            text-align: center;
+        }
+
+        .cta-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 500;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-text {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.8;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--gold-dark);
+            padding: 1.25rem 3rem;
+            border: none;
+            border-radius: 2px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-white:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ==================== FOOTER ==================== */
+        footer {
+            background: var(--text-primary);
+            color: white;
+            padding: 5rem 4rem 3rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            margin: 0 auto 4rem;
+        }
+
+        .footer-brand {
+            max-width: 350px;
+        }
+
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .footer-description {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-social a {
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            border-color: var(--gold);
+            background: var(--gold);
+        }
+
+        .footer-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-copyright {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-legal a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-legal a:hover {
+            color: var(--gold);
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 1200px) {
+            .collections-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 4rem;
+            }
+            .about-image {
+                height: 400px;
+            }
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 2rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .hero {
+                padding: 6rem 2rem 3rem;
+            }
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .about, .collections, .features, .testimonial, .cta {
+                padding: 5rem 2rem;
+            }
+            .collections-grid {
+                grid-template-columns: 1fr;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            .about-stats {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <a href="#" class="logo">Djalis Creations</a>
+        <ul class="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#collections">Collections</a></li>
+            <li><a href="#features">Craftsmanship</a></li>
+            <li><a href="#testimonials">Stories</a></li>
+        </ul>
+        <a href="#shop" class="nav-cta">Shop Now</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="motif"></div>
+            <p class="hero-eyebrow">Handcrafted Sterling Silver Jewelry</p>
+            <h1 class="hero-title">
+                <span>African Heritage</span>
+                Modern Elegance
+            </h1>
+            <p class="hero-description">
+                Discover handcrafted sterling silver jewelry inspired by African symbolism 
+                and cultural heritage. Each piece tells a story of emancipation, eternity, and oneness.
+            </p>
+            <div class="hero-buttons">
+                <a href="https://shop.app/m/gb1h0enfj3" class="btn-primary">Shop Collection</a>
+                <a href="#about" class="btn-secondary">Our Story</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="section-container">
+            <div class="about-grid">
+                <div class="about-content reveal">
+                    <p class="section-label">Our Heritage</p>
+                    <h2 class="about-title">Celebrating African Symbolism Through Silver</h2>
+                    <p class="about-text">
+                        At Djalis Creations, we honor the rich symbolism of African heritage 
+                        through meticulously handcrafted sterling silver jewelry. From the 
+                        sacred Cowrie shell to the eternal Ankh, each piece carries deep 
+                        cultural meaning and spiritual significance.
+                    </p>
+                    <p class="about-text">
+                        Our artisans combine traditional techniques with contemporary design, 
+                        creating jewelry that connects you to ancient wisdom while celebrating 
+                        modern elegance. Every bracelet, pendant, and ring is a testament to 
+                        emancipation, strength, and cultural pride.
+                    </p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">Sterling Silver</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">Handmade</div>
+                            <div class="stat-label">Each Piece</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">Cultural</div>
+                            <div class="stat-label">Heritage</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image reveal">
+                    <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop" alt="Artisan at work" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Collections Section -->
+    <section class="collections" id="collections">
+        <div class="section-container">
+            <div class="section-header reveal">
+                <p class="section-label">Curated Collections</p>
+                <h2 class="section-title">Symbols of Power & Heritage</h2>
+                <p class="section-subtitle">
+                    Explore our collections featuring Cowrie shells, Ankh symbols, Sankofa, 
+                    and African-inspired designs. Each piece crafted from solid sterling silver.
+                </p>
+            </div>
+            <div class="collections-grid">
+                <!-- Collection Card 1 - Cowrie -->
+                <div class="collection-card reveal">
+                    <div class="collection-image">
+                        <img src="assets/products/COWRIERING1.jpg" alt="Cowrie Shell Ring" loading="lazy">
+                        <div class="collection-overlay"></div>
+                    </div>
+                    <div class="collection-info">
+                        <h3 class="collection-name">Cowrie Collection</h3>
+                        <p class="collection-price">From £65 - £970</p>
+                        <p class="collection-description">Bracelets, pendants & bangles featuring sacred Cowrie shells</p>
+                    </div>
+                </div>
+                <!-- Collection Card 2 - Emancipation -->
+                <div class="collection-card reveal">
+                    <div class="collection-image">
+                        <img src="assets/products/CHAINCOWRIERING1.jpg" alt="Emancipation Ring with Chain" loading="lazy">
+                        <div class="collection-overlay"></div>
+                    </div>
+                    <div class="collection-info">
+                        <h3 class="collection-name">Emancipation Series</h3>
+                        <p class="collection-price">From £120 - £300</p>
+                        <p class="collection-description">Rings & jewelry symbolizing freedom and strength</p>
+                    </div>
+                </div>
+                <!-- Collection Card 3 - Ankh -->
+                <div class="collection-card reveal">
+                    <div class="collection-image">
+                        <img src="assets/products/ANKHBRACELET1.jpg" alt="Ankh Bracelet" loading="lazy">
+                        <div class="collection-overlay"></div>
+                    </div>
+                    <div class="collection-info">
+                        <h3 class="collection-name">African Symbols</h3>
+                        <p class="collection-price">From £140 - £660</p>
+                        <p class="collection-description">Ankh, Sankofa, Oneness & traditional Adinkra symbols</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section class="featured-products" style="padding: 8rem 4rem; background: var(--bg-primary);">
+        <div class="section-container">
+            <div class="section-header reveal">
+                <p class="section-label">Best Sellers</p>
+                <h2 class="section-title">Iconic Pieces</h2>
+                <p class="section-subtitle">
+                    Our most coveted designs, each telling a unique story of heritage and empowerment.
+                </p>
+            </div>
+            <div class="products-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+                <!-- Product 1 -->
+                <div class="product-card reveal" style="background: white; border-radius: 4px; overflow: hidden; transition: all 0.4s ease; cursor: pointer;">
+                    <div style="height: 300px; background: linear-gradient(135deg, #f5f5f5, #e8e8e8); position: relative; overflow: hidden;">
+                        <img src="assets/products/MEP8241.jpg" alt="Cowrie Bracelet" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" loading="lazy">
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem;">Cowrie Bracelet</h3>
+                        <p style="font-size: 0.875rem; color: var(--gold); font-weight: 600;">£390.00</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; line-height: 1.5;">Sterling silver cowrie shell link bracelet</p>
+                    </div>
+                </div>
+                <!-- Product 2 -->
+                <div class="product-card reveal" style="background: white; border-radius: 4px; overflow: hidden; transition: all 0.4s ease; cursor: pointer;">
+                    <div style="height: 300px; background: linear-gradient(135deg, #f5f5f5, #e8e8e8); position: relative; overflow: hidden;">
+                        <img src="assets/products/MEP8249.jpg" alt="Cowrie Shell Pendant" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" loading="lazy">
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem;">Cowrie Shell Pendant</h3>
+                        <p style="font-size: 0.875rem; color: var(--gold); font-weight: 600;">£65.00</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; line-height: 1.5;">Minimalist cowrie shell on delicate chain</p>
+                    </div>
+                </div>
+                <!-- Product 3 -->
+                <div class="product-card reveal" style="background: white; border-radius: 4px; overflow: hidden; transition: all 0.4s ease; cursor: pointer;">
+                    <div style="height: 300px; background: linear-gradient(135deg, #f5f5f5, #e8e8e8); position: relative; overflow: hidden;">
+                        <img src="assets/products/MEP8265.jpg" alt="Emancipation Ring" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" loading="lazy">
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem;">Emancipation Ring</h3>
+                        <p style="font-size: 0.875rem; color: var(--gold); font-weight: 600;">£120.00</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; line-height: 1.5;">Bold statement ring with chain detail</p>
+                    </div>
+                </div>
+                <!-- Product 4 -->
+                <div class="product-card reveal" style="background: white; border-radius: 4px; overflow: hidden; transition: all 0.4s ease; cursor: pointer;">
+                    <div style="height: 300px; background: linear-gradient(135deg, #f5f5f5, #e8e8e8); position: relative; overflow: hidden;">
+                        <img src="assets/products/MEP8287.jpg" alt="Ankh Bangle" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;" loading="lazy">
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem;">Ankh Bangle</h3>
+                        <p style="font-size: 0.875rem; color: var(--gold); font-weight: 600;">£260.00</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; line-height: 1.5;">Ancient Egyptian symbol of life</p>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 4rem;">
+                <a href="https://shop.app/m/gb1h0enfj3" target="_blank" rel="noopener" class="btn-primary" style="display: inline-block;">View All Products</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-container">
+            <div class="section-header reveal">
+                <p class="section-label">The Djalis Standard</p>
+                <h2 class="section-title">Crafted With Intention</h2>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-icon">✦</div>
+                    <h3 class="feature-title">Solid Sterling Silver</h3>
+                    <p class="feature-text">
+                        Every piece is crafted from genuine 925 sterling silver, 
+                        ensuring lasting beauty and quality that stands the test of time.
+                    </p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Handmade Artistry</h3>
+                    <p class="feature-text">
+                        Skilled artisans handcraft each piece, bringing traditional 
+                        techniques and cultural knowledge to every creation.
+                    </p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">∞</div>
+                    <h3 class="feature-title">Cultural Heritage</h3>
+                    <p class="feature-text">
+                        Designs inspired by African symbols - Cowrie, Ankh, Sankofa - 
+                        carrying deep spiritual meaning and ancestral connection.
+                    </p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">♥</div>
+                    <h3 class="feature-title">Natural Gemstones</h3>
+                    <p class="feature-text">
+                        Select pieces feature authentic gemstones - Carnelian, 
+                        Aventurine, Amethyst - chosen for beauty and meaning.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonial Section -->
+    <section class="testimonial" id="testimonials">
+        <div class="testimonial-content reveal">
+            <p class="section-label">Client Stories</p>
+            <blockquote class="testimonial-quote">
+                "The Cowrie bracelet is absolutely stunning. The craftsmanship is 
+                exceptional, and I love the cultural significance behind the design. 
+                It's become my everyday piece - meaningful and beautiful."
+            </blockquote>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar"></div>
+                <div class="testimonial-info">
+                    <div class="testimonial-name">Amara Johnson</div>
+                    <div class="testimonial-title">Jewelry Collector & Stylist</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" id="shop">
+        <div class="cta-content reveal">
+            <h2 class="cta-title">Wear Your Heritage</h2>
+            <p class="cta-text">
+                Discover jewelry that connects you to ancestral wisdom and 
+                celebrates African excellence. Find your perfect piece today.
+            </p>
+            <a href="https://shop.app/m/gb1h0enfj3" class="btn-white">Visit Our Shop</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-logo">Djalis Creations</div>
+                <p class="footer-description">
+                    Handcrafted sterling silver jewelry inspired by African symbolism 
+                    and cultural heritage. Each piece tells a story of emancipation, 
+                    eternity, and oneness.
+                </p>
+                <div class="footer-social">
+                    <a href="https://www.instagram.com/djaliscreation/" target="_blank" rel="noopener" aria-label="Instagram">IG</a>
+                    <a href="#" aria-label="Facebook">FB</a>
+                    <a href="#" aria-label="Pinterest">PT</a>
+                    <a href="https://shop.app/m/gb1h0enfj3" target="_blank" rel="noopener" aria-label="Shop">Shop</a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">Collections</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Cowrie Collection</a></li>
+                    <li><a href="#">Emancipation Series</a></li>
+                    <li><a href="#">African Symbols</a></li>
+                    <li><a href="#">Gemstone Pieces</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">About</h4>
+                <ul class="footer-links">
+                    <li><a href="#about">Our Heritage</a></li>
+                    <li><a href="#features">Craftsmanship</a></li>
+                    <li><a href="#">Materials</a></li>
+                    <li><a href="#">Symbolism Guide</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">Support</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Size Guide</a></li>
+                    <li><a href="#">Care Instructions</a></li>
+                    <li><a href="#">Shipping & Returns</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="footer-copyright">© 2026 Djalis Creations. All rights reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Register ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Reveal animations on scroll
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        revealElements.forEach((element) => {
+            gsap.to(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top 85%',
+                    toggleClass: 'active'
+                },
+                duration: 1,
+                ease: 'power3.out'
+            });
+        });
+
+        // Stagger animations for grids
+        gsap.from('.collection-card', {
+            scrollTrigger: {
+                trigger: '.collections-grid',
+                start: 'top 80%'
+            },
+            y: 60,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.product-card', {
+            scrollTrigger: {
+                trigger: '.products-grid',
+                start: 'top 80%'
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.feature-card', {
+            scrollTrigger: {
+                trigger: '.features-grid',
+                start: 'top 80%'
+            },
+            y: 40,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power3.out'
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
